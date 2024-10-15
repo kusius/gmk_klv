@@ -9,13 +9,19 @@
 #if !defined KLV_H
 #define KLV_H
 
+#if  defined(_WIN32) || defined(WIN32)
+ #include <Winsock2.h>
+#else 
+ #include 
+#endif
+
 #include <stdint.h>
 #include <string.h>
 
 // The KLV set type
-enum TYPE;
+// enum TYPE;
 // The internal state n
-enum PARSE_STATE;
+// enum PARSE_STATE;
 struct KLVElement;
 struct KLVParser;
 
@@ -161,6 +167,12 @@ static int getLenFlag(uint8_t len)
 
 static int getKLVSetSize(const uint8_t* stream, int sz)
 {
+    // The use of memcpy here requires attention.
+    // We are copying [sz] number of bytes (uint8_t) into the destination.
+    // Therefore in the cases where sz < 3, 4, 5 it is valid to copy into an int (4 bytes in a 64 bit system which we assume(!) we have)
+    // conversely when sz < 2 (aka sz == 0 or sz == 1) we copy at most 1 byte, which
+    // indeed fits into an uint8_t.
+    // TODO: Can this be done more safely ? The main worry is when the system running this is 32-bit.
 	int ret = 0;
 	if (sz < 2)
 	{
@@ -191,7 +203,7 @@ static int getKLVSetSize(const uint8_t* stream, int sz)
 	return ret;
 }
 
-static decodeBERLength(int* numBytesRead, const uint8_t* buffer, int size) {
+static int decodeBERLength(int* numBytesRead, const uint8_t* buffer, int size) {
     int i = 0;
     int len = 0;
     if (buffer[i] < 128) {
