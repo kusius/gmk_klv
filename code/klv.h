@@ -9,17 +9,20 @@
 #if !defined KLV_H
 #define KLV_H
 
+// ntohs, ntohl
+#if  defined(_WIN32) || defined(WIN32)
+ #include <Winsock2.h>
+#else 
+ #include <netinet/in.h>
+#endif
+
 #include <stdint.h>
 #include <string.h>
 
-// The KLV set type
-enum TYPE;
-// The internal state n
-enum PARSE_STATE;
 struct KLVElement;
 struct KLVParser;
 
-int parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
+void parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
 
 
 #endif // !KLV_H
@@ -84,6 +87,10 @@ typedef struct KLVElement {
     uint8_t value[256];
 } KLVElement;
 
+static uint8_t key(const KLVElement klv) {
+    return klv.keyLength == 0 ? 0 : klv.key[0];
+}
+
 // The UAS dataset klv elements we parse
 #define KLVChecksum (KLVElement) {.key = {1}};
 #define KLVUnixTimeStamp (KLVElement) {.key = {2}};
@@ -139,9 +146,10 @@ typedef struct KLVParser {
     uint8_t buffer[MAX_PARSE_BYTES];
     uint8_t sodb[MAX_PARSE_BYTES];
     // indices of buffers in this parsing session
-    size_t index;
-    size_t sodbIndex;
+    size_t bufferSize;
+    size_t sodbSize;
     size_t setSize;
+    KLVElement checksumElement;
 } KLVParser;
 
 static int getLenFlag(uint8_t len)
@@ -156,6 +164,12 @@ static int getLenFlag(uint8_t len)
 
 static int getKLVSetSize(const uint8_t* stream, int sz)
 {
+    // The use of memcpy here requires attention.
+    // We are copying [sz] number of bytes (uint8_t) into the destination.
+    // Therefore in the cases where sz < 3, 4, 5 it is valid to copy into an int (4 bytes in a 64 bit system which we assume(!) we have)
+    // conversely when sz < 2 (aka sz == 0 or sz == 1) we copy at most 1 byte, which
+    // indeed fits into an uint8_t.
+    // TODO: Can this be done more safely ? The main worry is when the system running this is 32-bit.
 	int ret = 0;
 	if (sz < 2)
 	{
@@ -186,7 +200,7 @@ static int getKLVSetSize(const uint8_t* stream, int sz)
 	return ret;
 }
 
-static decodeBERLength(int* numBytesRead, const uint8_t* buffer, int size) {
+static int decodeBERLength(int* numBytesRead, const uint8_t* buffer, int size) {
     int i = 0;
     int len = 0;
     if (buffer[i] < 128) {
@@ -813,64 +827,130 @@ static int klvParseUniversalSetElement(KLVElement *klv, uint8_t *data, size_t si
     return 0;
 }
 
-static int parse(KLVParser* parser, const uint8_t* chunk, const int length) {
+
+static void onElement(KLVParser *parser, const KLVElement klv) {
+    if(key(klv) == 1) {
+        parser->checksumElement = klv;
+    }
+}
+
+static void onBeginSet(KLVParser *parser, int len, TYPE type) {
+    parser->setSize = len;
+    parser->state = LEXING;
+    for(size_t i = 0; i < parser->bufferSize; i++) {
+        parser->buffer[i] = 0;
+    }
+    parser->bufferSize = 0;
+}
+
+static void onEndSet(KLVParser *parser) {
+    parser->state = START_SET_KEY;
+    parser->setSize = 0;
+    for (size_t i = 0; i < parser->bufferSize; i++) {
+        parser->buffer[i] = 0;
+    }
+    parser->bufferSize = 0;
+
+    // TODO: Here is where we validate the checksum for that set if the parser->type is LOCAL_SET
+
+    for(size_t i = 0; i < parser->sodbSize; i++) {
+        parser->sodb[i] = 0;
+    }
+}
+
+static void onBegin(KLVParser *parser, int len) {
+    if(parser->type != UNKNOWN) {
+        onBeginSet(parser, len, parser->type);
+    }
+}
+
+static void onEndSetKey(KLVParser *parser) {
+    parser->state = START_SET_LEN_FLAG;
+    for(size_t i = 0; i < parser->bufferSize; i++) {
+        parser->buffer[i] = 0;
+    }
+}
+
+static void onEndLenFlag(KLVParser *parser) {
+    parser->state = START_SET_LEN;
+    for(size_t i = 0; i < parser->bufferSize; i++) {
+        parser->buffer[i] = 0;
+    }
+}
+
+static void onEndKey(KLVParser *parser, TYPE type) {
+    parser->type = type;
+    onEndSetKey(parser);
+}
+
+static void onError(KLVParser *parser) {
+    parser->state = START_SET_KEY;
+    parser->setSize = 0;
+    for (size_t i = 0; i < parser->bufferSize; i++) {
+        parser->buffer[i] = 0;
+    }
+    parser->bufferSize = 0;
+
+    for (size_t i = 0; i < parser->sodbSize; i++) {
+        parser->sodb[i] = 0;
+    }
+    parser->sodbSize = 0;
+}
+
+void parse(KLVParser* parser, const uint8_t* chunk, const int length) {
     for(size_t i = 0; i < length; i++) {
         uint8_t byte = chunk[i];
 
         if(parser->state == START_SET_KEY) {
-            parser->buffer[parser->index++] = byte;
+            parser->buffer[parser->bufferSize++] = byte;
             
-            if(parser->index == 16) {
+            if(parser->bufferSize == 16) {
                 if(memcmp(parser->buffer, LocalSetKey, 16) == 0) {
-                    memcpy(parser->sodb, parser->buffer, parser->index);
-                    parser->type = LOCAL_SET;
-                    //onendkey
+                    memcpy(parser->sodb, parser->buffer, parser->bufferSize);
+                    onEndKey(parser, LOCAL_SET);
+
                 } else if (memcmp(parser->buffer, UniversalMetadataSetKey, 16) == 0) {
-                    memcpy(parser->sodb, parser->buffer, parser->index);
-                    parser->type = UNIVERSAL_SET;
-                    //onendkey
+                    memcpy(parser->sodb, parser->buffer, parser->bufferSize);
+                    onEndKey(parser, UNIVERSAL_SET);
                 } else if (memcmp(parser->buffer, SecurityMetadataUniversalSetKey, 16) == 0) {
-                    memcpy(parser->sodb, parser->buffer, parser->index);
-                    parser->type = SECURITY_UNIVERSAL_SET;
-                    //onendkey
+                    memcpy(parser->sodb, parser->buffer, parser->bufferSize);
+                    onEndKey(parser, SECURITY_UNIVERSAL_SET);
                 } else if (memcmp(parser->buffer, UniversalMetadataElementKey, 4) == 0) {
-                    memcpy(parser->sodb, parser->buffer, parser->index);
-                    parser->type = UNIVERSAL_ELEMENT;
-                    //onendkey
+                    memcpy(parser->sodb, parser->buffer, parser->bufferSize);
+                    onEndKey(parser, UNIVERSAL_ELEMENT);
                 } else {
-                    //onError
                     parser->type = UNKNOWN;
-                    return -1;
+                    onError(parser);
                 }
             }
         }
         else if(parser->state == START_SET_LEN_FLAG) {
-            //onEndLenFlag
-            parser->buffer[parser->index++] = byte;
+            onEndLenFlag(parser);
+            parser->buffer[parser->bufferSize++] = byte;
         }
         else if(parser->state == START_SET_LEN) {
             const int lenFlag = getLenFlag(parser->buffer[0]);
             int setSize = 0;
             if(lenFlag == 0) {
                 setSize = parser->buffer[0];
-                parser->sodb[parser->sodbIndex++] = parser->buffer[0];
-                // onbegin
-            } else if(parser->index == lenFlag + 1) {
+                parser->sodb[parser->sodbSize++] = parser->buffer[0];
+                onBegin(parser, setSize);
+            } else if(parser->bufferSize == lenFlag + 1) {
                 uint8_t actualLengthFlag = lenFlag | 0x80;
-                parser->sodb[parser->sodbIndex++] = actualLengthFlag;
+                parser->sodb[parser->sodbSize++] = actualLengthFlag;
                 // skip over the length flag
-                memcpy(parser->sodb + parser->sodbIndex, parser->buffer + 1, parser->index - 1);
+                memcpy(parser->sodb + parser->sodbSize, parser->buffer + 1, parser->bufferSize - 1);
                 setSize = getKLVSetSize(parser->buffer + 1, lenFlag);
-                // onbegin
+                onBegin(parser, setSize);
             } else {
-                parser->buffer[parser->index++] = byte;
+                parser->buffer[parser->bufferSize++] = byte;
             }
         } 
         
         if(parser->state == LEXING) {
-            parser->buffer[parser->index++] = byte;
-            parser->sodb[parser->sodbIndex++] = byte;
-            if(parser->index == parser->setSize) {
+            parser->buffer[parser->bufferSize++] = byte;
+            parser->sodb[parser->sodbSize++] = byte;
+            if(parser->bufferSize == parser->setSize) {
                 parser->state = PARSING;
             }
         } 
@@ -889,12 +969,12 @@ static int parse(KLVParser* parser, const uint8_t* chunk, const int length) {
                     }
                 }
 
-                // onElement
+                onElement(parser, klv);
             }
-            // onEndSet
+            onEndSet(parser);
         }
-        
-        return 0;
     }
 }
+
+
 #endif // !KLV_IMPLEMENTATION
