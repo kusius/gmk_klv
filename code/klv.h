@@ -9,23 +9,20 @@
 #if !defined KLV_H
 #define KLV_H
 
+// ntohs, ntohl
 #if  defined(_WIN32) || defined(WIN32)
  #include <Winsock2.h>
 #else 
- #include 
+ #include <netinet/in.h>
 #endif
 
 #include <stdint.h>
 #include <string.h>
 
-// The KLV set type
-// enum TYPE;
-// The internal state n
-// enum PARSE_STATE;
 struct KLVElement;
 struct KLVParser;
 
-int parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
+void parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
 
 
 #endif // !KLV_H
@@ -900,7 +897,7 @@ static void onError(KLVParser *parser) {
     parser->sodbSize = 0;
 }
 
-static int parse(KLVParser* parser, const uint8_t* chunk, const int length) {
+void parse(KLVParser* parser, const uint8_t* chunk, const int length) {
     for(size_t i = 0; i < length; i++) {
         uint8_t byte = chunk[i];
 
@@ -924,7 +921,6 @@ static int parse(KLVParser* parser, const uint8_t* chunk, const int length) {
                 } else {
                     parser->type = UNKNOWN;
                     onError(parser);
-                    return -1;
                 }
             }
         }
@@ -977,8 +973,6 @@ static int parse(KLVParser* parser, const uint8_t* chunk, const int length) {
             }
             onEndSet(parser);
         }
-        
-        return 0;
     }
 }
 
