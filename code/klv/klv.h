@@ -34,6 +34,7 @@ void parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
 // of total bytes that we are able to be parsed by this library.
 #define KILOBYTES(x) (x) * 1024
 #define MEGABYTES(x) (KILOBYTES(x)) * 1024
+#define MAX_UAS_TAGS 143
 #if !defined MAX_PARSE_BYTES
 #define MAX_PARSE_BYTES MEGABYTES(1)
 #endif
@@ -149,7 +150,10 @@ typedef struct KLVParser {
     size_t bufferSize;
     size_t sodbSize;
     size_t setSize;
+    size_t uasDataSetSize;
     KLVElement checksumElement;
+    // The checksum element is saved as 
+    KLVElement uasDataSet[MAX_UAS_TAGS];
 } KLVParser;
 
 static int getLenFlag(uint8_t len)
@@ -831,6 +835,8 @@ static int klvParseUniversalSetElement(KLVElement *klv, uint8_t *data, size_t si
 static void onElement(KLVParser *parser, const KLVElement klv) {
     if(key(klv) == 1) {
         parser->checksumElement = klv;
+    } else {
+        parser->uasDataSet[key(klv)] = klv;
     }
 }
 
