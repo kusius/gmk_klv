@@ -2,6 +2,7 @@
     "files.associations": {
         "inttypes.h": "c",
         "stdint.h": "c",
-        "cstdint": "c"
+        "cstdint": "c",
+        "klv.h": "c"
     }
 }

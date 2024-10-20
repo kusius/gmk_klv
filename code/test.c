@@ -4,13 +4,15 @@
 #include "thirdparty/files.h"
 
 int main(void) {
+    KLVParser parser;
     FILE *file;
-    file = fopen("./test.txt", "r");
+    file = fopen("./svt_testset_420 720p50_KLVED 4774.klv", "r");
+    // file = fopen("./test.txt", "r");
     if(!file) {
         return -1;
     }
 
-    char *data; 
+    uint8_t *data; 
     size_t bytesRead;
 
     int res = readall(file, &data, &bytesRead);
@@ -20,11 +22,24 @@ int main(void) {
         return res;
     }
 
+    parse(&parser, data, bytesRead);
+    for(int i = 0; i < MAX_UAS_TAGS; i++) {
+        KLVElement *klv = &parser.uasDataSet[i];
+
+        if(key(*klv) == 4) {
+            for(int k = 0; k < klv->length; k++) {
+                printf("%c", klv->value[k]);
+            }
+            printf("\n");
+        }
+    }
+
     int i;
-    for(char *c = data, i = 0; *c != '\0' && i < bytesRead; c++, i++) {
-        printf("%c", *c);
+    for(uint8_t *c = data, i = 0; i < bytesRead; c++, i++) {
+        printf("%hhx ", *c);
     }
     printf("\n");
 
+    
     return 0;
 }

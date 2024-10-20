@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <errno.h>
 
 /* Size of each input chunk to be
@@ -17,7 +18,7 @@
 #define  READALL_TOOMUCH    -3  /* Too much input */
 #define  READALL_NOMEM      -4  /* Out of memory */
 
-int readall(FILE *in, char **dataptr, size_t *sizeptr);
+int readall(FILE *in, uint8_t **dataptr, size_t *sizeptr);
 
 #endif 
 
@@ -32,9 +33,9 @@ int readall(FILE *in, char **dataptr, size_t *sizeptr);
      and automatically appended after the data.
    Initial values of (*dataptr) and (*sizeptr) are ignored.
 */
-int readall(FILE *in, char **dataptr, size_t *sizeptr)
+int readall(FILE *in, uint8_t **dataptr, size_t *sizeptr)
 {
-    char  *data = NULL, *temp;
+    uint8_t  *data = NULL, *temp;
     size_t size = 0;
     size_t used = 0;
     size_t n;

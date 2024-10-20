@@ -23,7 +23,7 @@ struct KLVElement;
 struct KLVParser;
 
 void parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
-
+uint8_t key(const struct KLVElement klv);
 
 #endif // !KLV_H
 
@@ -36,7 +36,7 @@ void parse(struct KLVParser* parser, const uint8_t* chunk, const int length);
 #define MEGABYTES(x) (KILOBYTES(x)) * 1024
 #define MAX_UAS_TAGS 143
 #if !defined MAX_PARSE_BYTES
-#define MAX_PARSE_BYTES MEGABYTES(1)
+#define MAX_PARSE_BYTES KILOBYTES(1)
 #endif
 
 const uint8_t LocalSetKey[] = { 
@@ -88,7 +88,7 @@ typedef struct KLVElement {
     uint8_t value[256];
 } KLVElement;
 
-static uint8_t key(const KLVElement klv) {
+uint8_t key(const KLVElement klv) {
     return klv.keyLength == 0 ? 0 : klv.key[0];
 }
 
@@ -260,7 +260,6 @@ static int decodeKey(int* numBytesRead, const uint8_t *buffer, int size) {
 
 
 static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
-    return 0;
     int p = 0;
 	int numOfBytesRead = 0;
 	int key = decodeKey(&numOfBytesRead, buf, size);
@@ -824,6 +823,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->value[i] = buf[p++];
         }
     }
+    klv->keyLength = 1;
+    return p;
 }
 
 
@@ -862,6 +863,7 @@ static void onEndSet(KLVParser *parser) {
     for(size_t i = 0; i < parser->sodbSize; i++) {
         parser->sodb[i] = 0;
     }
+    parser->sodbSize = 0;
 }
 
 static void onBegin(KLVParser *parser, int len) {
@@ -875,6 +877,7 @@ static void onEndSetKey(KLVParser *parser) {
     for(size_t i = 0; i < parser->bufferSize; i++) {
         parser->buffer[i] = 0;
     }
+    parser->bufferSize = 0;
 }
 
 static void onEndLenFlag(KLVParser *parser) {
@@ -882,6 +885,7 @@ static void onEndLenFlag(KLVParser *parser) {
     for(size_t i = 0; i < parser->bufferSize; i++) {
         parser->buffer[i] = 0;
     }
+    parser->bufferSize = 0;
 }
 
 static void onEndKey(KLVParser *parser, TYPE type) {
