@@ -2,9 +2,56 @@
 #include "klv/klv.h"
 #define GMK_FILES_IMPLEMENTATION
 #include "thirdparty/files.h"
+#include <assert.h>
+
+void onEndSetCallback(KLVElement *klvSet, int size) {
+    for(int i = 0; i < size; i++) {
+        KLVElement klv = klvSet[i];
+
+        if(klv.length != 0) {
+            printf("Key(%d)\nLength(%d)\nValue(", key(klv), klv.length);
+
+            // print value as hex
+            for(int j = 0; j < klv.length; j++) {
+                char space = (j == klv.length - 1) ? '\0' : ' ';
+                printf("%hhx%c",  klv.value[j], space);
+            }
+            printf(")(");
+
+            // readable prints
+            switch (klv.valueType)
+            {
+                case KLV_VALUE_STRING:              
+                for(int j = 0; j < klv.length; j++) {
+                    printf("%c", klv.value[j]);
+                }
+                break;
+
+                case KLV_VALUE_INT: printf("%d", klv.intValue); break;
+                case KLV_VALUE_UINT64: printf("%llu", klv.uint64Value); break;
+                case KLV_VALUE_DOUBLE: printf("%lf", klv.doubleValue); break;
+                case KLV_VALUE_FLOAT: printf("%f", klv.floatValue); break;
+
+                case KLV_VALUE_UNKNOWN: printf("Unknown value type for key %d", key(klv)); break;
+                case KLV_VALUE_PARSE_ERROR: {
+                    printf("Parse error for key: %d", key(klv));
+                    assert(1==0);
+                } break;
+
+                default: break;
+            }
+
+            printf(")\n\n");
+        }
+    }
+}
 
 int main(void) {
     KLVParser parser;
+    for(int i = 0; i < MAX_UAS_TAGS; i++) {
+        parser.uasDataSet[i] = (KLVElement) {} ;
+    }
+
     FILE *file;
     file = fopen("./svt_testset_420 720p50_KLVED 4774.klv", "r");
     // file = fopen("./test.txt", "r");
@@ -22,7 +69,7 @@ int main(void) {
         return res;
     }
 
-    parse(&parser, data, bytesRead);
+    parse(&parser, data, bytesRead, onEndSetCallback);
     for(int i = 0; i < MAX_UAS_TAGS; i++) {
         KLVElement *klv = &parser.uasDataSet[i];
 
@@ -33,13 +80,6 @@ int main(void) {
             printf("\n");
         }
     }
-
-    int i;
-    for(uint8_t *c = data, i = 0; i < bytesRead; c++, i++) {
-        printf("%hhx ", *c);
-    }
-    printf("\n");
-
     
     return 0;
 }
