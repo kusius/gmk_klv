@@ -17,6 +17,8 @@
 #endif
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <math.h>
 #include <string.h>
 
 #define MAX_UAS_TAGS 143
@@ -109,6 +111,123 @@ typedef struct KLVElement {
     };
 } KLVElement;
 
+static uint8_t POSITIVE_INFINITY_HIGH_BYTE = 0xC8;
+static uint8_t NEGATIVE_INFINITY_HIGH_BYTE = 0xE8;
+static uint8_t POSITIVE_QUIET_NAN_HIGH_BYTE = 0xD0;
+static uint8_t NEGATIVE_QUIET_NAN_HIGH_BYTE = 0xF0;
+static uint8_t HIGH_BYTE_MASK = 0xF8;
+
+typedef struct FPParser {
+        double a;
+		double b;
+		double bPow;
+		double dPow;
+		int length;
+		double sF;
+		double sR;
+		double zOffset;
+} FPParser;
+
+FPParser fpParserOf(double min, double max, int length) {
+    FPParser fpParser = {};
+    fpParser.a = min;
+    fpParser.b = max;
+    fpParser.length = length;
+    fpParser.zOffset = 0.0;
+    fpParser.bPow = ceil(log2(fpParser.b - fpParser.a));
+    fpParser.dPow = (double)(8 * (uint64_t)fpParser.length - 1);
+    fpParser.sF = exp2(fpParser.dPow - fpParser.bPow);
+    fpParser.sR = exp2(fpParser.bPow - fpParser.dPow);
+
+    if (fpParser.a < 0 && fpParser.b > 0) {
+        fpParser.zOffset = fpParser.sF * fpParser.a - floor(fpParser.sF * fpParser.a);
+    }
+
+    return fpParser;
+}
+
+double fpParserDecodeAsNormalMappedValue(FPParser *fpParser, const unsigned char* valueBuffer, int bufsiz) {
+    	double val = 0.0;
+
+		switch (fpParser->length)
+		{
+		case 1:
+		{
+			int b1 = (int)valueBuffer[0];
+			val = fpParser->sR * (b1 - fpParser->zOffset) + fpParser->a;
+		} break;
+		case 2:
+		{
+			short nVal;
+			memcpy(&nVal, valueBuffer, 2);
+			nVal = ntohs(nVal);
+			val = fpParser->sR * (nVal - fpParser->zOffset) + fpParser->a;
+		} break;
+		case 3:
+		{
+			int nVal = 0;
+			memcpy(&nVal, valueBuffer, 3);
+			nVal = ntohl(nVal);
+			nVal = nVal >> 8;
+			val = fpParser->sR * (nVal - fpParser->zOffset) + fpParser->a;
+		} break;
+		case 4:
+		{
+			int nVal = 0;
+			memcpy(&nVal, valueBuffer, 4);
+			nVal = ntohl(nVal);
+			val = fpParser->sR * (nVal - fpParser->zOffset) + fpParser->a;
+		} break;
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		{
+			long long nVal = 0;
+			memcpy(&nVal, valueBuffer, 8);
+			nVal = ntohll(nVal);
+			int shift = (8 - fpParser->length) * 8;
+			nVal = nVal >> shift;
+			val = fpParser->sR * (nVal - fpParser->zOffset) + fpParser->a;
+		}
+		break;
+		}
+		return val;
+}
+
+double fpParserDecode(FPParser *fpParser, const unsigned char *buffer, int bufsiz) {
+    	if (bufsiz > fpParser->length)
+			return nan("");
+
+		if ((buffer[0] & 0x80) == 0x00)
+		{
+			return fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
+		}
+		// Check if it is -1
+		else if (buffer[0] == 0x80) {
+			bool allZeros = true;
+			for (int i = 1; i < bufsiz; i++) {
+				if (buffer[i] != 0x00) {
+					allZeros = false;
+					break;
+				}
+			}
+			if (allZeros) {
+				return fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
+			}
+		}
+
+		uint8_t highByteBits = buffer[0] & HIGH_BYTE_MASK;
+		if (highByteBits == POSITIVE_INFINITY_HIGH_BYTE) {
+			return INFINITY;
+		}
+		else if (highByteBits == NEGATIVE_INFINITY_HIGH_BYTE) {
+			return INFINITY;
+		}
+		else {
+			return nan("");
+		}
+}
 
 uint8_t key(const KLVElement klv) {
     return klv.keyLength == 0 ? 0 : klv.key[0];
@@ -119,16 +238,16 @@ uint8_t key(const KLVElement klv) {
 #define KLVUnixTimeStamp (KLVElement) {.key = {2}, .valueType = KLV_VALUE_UINT64};
 #define KLVMissionID (KLVElement) {.key = {3}, .valueType = KLV_VALUE_STRING};
 #define KLVPlatformTailNumber (KLVElement) {.key = {4}, .valueType = KLV_VALUE_STRING};
-#define KLVPlatformHeadingAngle (KLVElement) {.key = {5}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformPitchAngle (KLVElement) {.key = {6}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformRollAngle (KLVElement) {.key = {7}, .valueType = KLV_VALUE_INT};
+#define KLVPlatformHeadingAngle (KLVElement) {.key = {5}, .valueType = KLV_VALUE_FLOAT};
+#define KLVPlatformPitchAngle (KLVElement) {.key = {6}, .valueType = KLV_VALUE_FLOAT};
+#define KLVPlatformRollAngle (KLVElement) {.key = {7}, .valueType = KLV_VALUE_FLOAT};
 #define KLVPlatformTrueAirspeed (KLVElement) {.key = {8}, .valueType = KLV_VALUE_INT};
 #define KLVPlatformIndicatedAirspeed (KLVElement) {.key = {9}, .valueType = KLV_VALUE_INT};
 #define KLVPlatformDesignation (KLVElement) {.key = {10}, .valueType = KLV_VALUE_STRING};
 #define KLVImageSourceSensor (KLVElement) {.key = {11}, .valueType = KLV_VALUE_STRING};
 #define KLVImageCoordinateSystem (KLVElement) {.key = {12}, .valueType = KLV_VALUE_STRING};
-#define KLVSensorLatitude (KLVElement) {.key = {13}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorLongitude (KLVElement) {.key = {14}, .valueType = KLV_VALUE_FLOAT};
+#define KLVSensorLatitude (KLVElement) {.key = {13}, .valueType = KLV_VALUE_DOUBLE};
+#define KLVSensorLongitude (KLVElement) {.key = {14}, .valueType = KLV_VALUE_DOUBLE};
 #define KLVSensorTrueAltitude (KLVElement) {.key = {15}, .valueType = KLV_VALUE_FLOAT};
 #define KLVSensorHorizontalFieldOfView (KLVElement) {.key = {16}, .valueType = KLV_VALUE_FLOAT};
 #define KLVSensorVerticalFieldOfView (KLVElement) {.key = {17}, .valueType = KLV_VALUE_FLOAT};
@@ -396,7 +515,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                     klv->value[i] = buf[p++];
                 uint16_t nVal;
                 memcpy(&nVal, klv->value, 2);
-                klv->intValue = nVal;
+                uint16_t LDS = ntohs(nVal);
+                klv->intValue = (int)nVal;
             } else {
                 *klv = KLVParseError(key);
                 p += len;
@@ -478,7 +598,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 
                 short nVal;
                 memcpy(&nVal, klv->value, 2);
-                uint16_t LDS = ntohs(nVal);
+                short LDS = ntohs(nVal);
                 klv->floatValue = 40.0 / 0xFFFE * LDS;
 
             } else {
@@ -497,7 +617,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 
                 short nVal;
                 memcpy(&nVal, klv->value, 2);
-                uint16_t LDS = ntohs(nVal);
+                short LDS = ntohs(nVal);
                 klv->floatValue = 100.0 / 0xFFFE * LDS;
             } else {
                 *klv = KLVParseError(key);
@@ -2203,7 +2323,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // TODO: FpParser
+                FPParser fpp = fpParserOf(0.0, 1500000.0, klv->length);
+                klv->floatValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2315,7 +2436,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // TODO: FpParser
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2332,7 +2454,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // TODO: FpParser
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2349,7 +2472,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // TODO: FpParser
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2397,7 +2521,6 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
-                // TODO: FpParser
             } else {
                 *klv = KLVParseError(key);
                 p += len;
@@ -2413,7 +2536,9 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
-                // TODO: FpParser
+
+                FPParser fpp = fpParserOf(0.0, 21000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = KLVParseError(key);
                 p += len;
@@ -2472,7 +2597,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
+                FPParser fpp = fpParserOf(0.0, 360.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2489,8 +2615,9 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
 
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = KLVParseError(key);
                 p += len;
@@ -2507,6 +2634,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                     klv->value[i] = buf[p++];
 
                 // FPParser                
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2521,9 +2650,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 *klv = KLVControlCommand;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
-                    klv->value[i] = buf[p++];
-
-                // FPParser                
+                    klv->value[i] = buf[p++];              
 
             } else {
                 *klv = KLVParseError(key);
@@ -2554,7 +2681,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
+                FPParser fpp = fpParserOf(-1000.0, 1000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2570,7 +2698,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
+                FPParser fpp = fpParserOf(-900, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2586,7 +2715,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
+                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2602,7 +2732,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // FPParser                
+                FPParser fpp = fpParserOf(0.0, 100.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = KLVParseError(key);
@@ -2787,7 +2918,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                // fpparser
+                FPParser fpp = fpParserOf(1.0, 99999.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = KLVParseError(key);
                 p += len;
@@ -2819,7 +2951,9 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                //fpparser
+                FPParser fpp = fpParserOf(0.0, 100.0, klv->length);
+                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+
   
             } else {
                 *klv = KLVParseError(key);
@@ -2961,9 +3095,8 @@ static int klvParseUniversalSetElement(KLVElement *klv, uint8_t *data, size_t si
 static void onElement(KLVParser *parser, const KLVElement klv) {
     if(key(klv) == 1) {
         parser->checksumElement = klv;
-    } else {
-        parser->uasDataSet[key(klv)] = klv;
     }
+    parser->uasDataSet[key(klv)] = klv;
 }
 
 static void onBeginSet(KLVParser *parser, int len, TYPE type) {

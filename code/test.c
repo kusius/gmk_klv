@@ -4,17 +4,20 @@
 #include "thirdparty/files.h"
 #include <assert.h>
 
+// Prints KLV as : 
+// Key(xx)
+// Length(xx)
+// Value(binary)(readable data type)
 void onEndSetCallback(KLVElement *klvSet, int size) {
     for(int i = 0; i < size; i++) {
         KLVElement klv = klvSet[i];
-
+    
         if(klv.length != 0) {
             printf("Key(%d)\nLength(%d)\nValue(", key(klv), klv.length);
 
             // print value as hex
             for(int j = 0; j < klv.length; j++) {
-                char space = (j == klv.length - 1) ? '\0' : ' ';
-                printf("%hhx%c",  klv.value[j], space);
+                printf("%hhx ",  klv.value[j]);
             }
             printf(")(");
 
@@ -47,14 +50,8 @@ void onEndSetCallback(KLVElement *klvSet, int size) {
 }
 
 int main(void) {
-    KLVParser parser;
-    for(int i = 0; i < MAX_UAS_TAGS; i++) {
-        parser.uasDataSet[i] = (KLVElement) {} ;
-    }
-
     FILE *file;
     file = fopen("./svt_testset_420 720p50_KLVED 4774.klv", "r");
-    // file = fopen("./test.txt", "r");
     if(!file) {
         return -1;
     }
@@ -69,17 +66,13 @@ int main(void) {
         return res;
     }
 
-    parse(&parser, data, bytesRead, onEndSetCallback);
+    // Parse all the test file bytes
+    KLVParser parser;
     for(int i = 0; i < MAX_UAS_TAGS; i++) {
-        KLVElement *klv = &parser.uasDataSet[i];
-
-        if(key(*klv) == 4) {
-            for(int k = 0; k < klv->length; k++) {
-                printf("%c", klv->value[k]);
-            }
-            printf("\n");
-        }
+        parser.uasDataSet[i] = (KLVElement) {} ;
     }
+
+    parse(&parser, data, bytesRead, onEndSetCallback);
     
     return 0;
 }
