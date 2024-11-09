@@ -9,23 +9,14 @@
 #if !defined KLV_H
 #define KLV_H
 
-// ntohs, ntohl
-#if  defined(_WIN32) || defined(WIN32)
- #include <Winsock2.h>
-#else 
- #include <netinet/in.h>
-#endif
-
 #include <stdint.h>
-#include <stdbool.h>
-#include <math.h>
-#include <string.h>
 
 #define MAX_UAS_TAGS 143
 struct KLVElement;
 enum KLVValueType;
 struct KLVParser;
 
+struct KLVParser klvParser();
 void parse(struct KLVParser* parser, const uint8_t* chunk, const int length, void (*onEndSetCallback)(struct KLVElement *, int));
 uint8_t key(const struct KLVElement klv);
 
@@ -34,6 +25,16 @@ uint8_t key(const struct KLVElement klv);
 
 #if defined KLV_IMPLEMENTATION
 
+// ntohs, ntohl
+#if  defined(_WIN32) || defined(WIN32)
+ #include <Winsock2.h>
+#else 
+ #include <netinet/in.h>
+#endif
+
+#include <stdbool.h>
+#include <math.h>
+#include <string.h>
 // In order to have fixed memory needs, we define the maximum number 
 // of total bytes that we are able to be parsed by this library.
 #define KILOBYTES(x) (x) * 1024
@@ -234,152 +235,152 @@ uint8_t key(const KLVElement klv) {
 }
 
 // The UAS dataset klv elements we parse
-#define KLVChecksum (KLVElement) {.key = {1}, .valueType = KLV_VALUE_INT};
-#define KLVUnixTimeStamp (KLVElement) {.key = {2}, .valueType = KLV_VALUE_UINT64};
-#define KLVMissionID (KLVElement) {.key = {3}, .valueType = KLV_VALUE_STRING};
-#define KLVPlatformTailNumber (KLVElement) {.key = {4}, .valueType = KLV_VALUE_STRING};
-#define KLVPlatformHeadingAngle (KLVElement) {.key = {5}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformPitchAngle (KLVElement) {.key = {6}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformRollAngle (KLVElement) {.key = {7}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformTrueAirspeed (KLVElement) {.key = {8}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformIndicatedAirspeed (KLVElement) {.key = {9}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformDesignation (KLVElement) {.key = {10}, .valueType = KLV_VALUE_STRING};
-#define KLVImageSourceSensor (KLVElement) {.key = {11}, .valueType = KLV_VALUE_STRING};
-#define KLVImageCoordinateSystem (KLVElement) {.key = {12}, .valueType = KLV_VALUE_STRING};
-#define KLVSensorLatitude (KLVElement) {.key = {13}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVSensorLongitude (KLVElement) {.key = {14}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVSensorTrueAltitude (KLVElement) {.key = {15}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorHorizontalFieldOfView (KLVElement) {.key = {16}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorVerticalFieldOfView (KLVElement) {.key = {17}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorRelativeAzimuthAngle (KLVElement) {.key = {18}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVSensorRelativeElevationAngle (KLVElement) {.key = {19}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVSensorRelativeRollAngle (KLVElement) {.key = {20}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVSlantRange (KLVElement) {.key = {21}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVTargetWidth (KLVElement) {.key = {22}, .valueType = KLV_VALUE_FLOAT};
-#define KLVFrameCenterLatitude (KLVElement) {.key = {23}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVFrameCenterLongitude (KLVElement) {.key = {24}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVFrameCenterElevation (KLVElement) {.key = {25}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLatitudePoint1 (KLVElement) {.key = {26}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLongitudePoint1 (KLVElement) {.key = {27}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLatitudePoint2 (KLVElement) {.key = {28}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLongitudePoint2 (KLVElement) {.key = {29}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLatitudePoint3 (KLVElement) {.key = {30}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLongitudePoint3 (KLVElement) {.key = {31}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLatitudePoint4 (KLVElement) {.key = {32}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOffsetCornerLongitudePoint4 (KLVElement) {.key = {33}, .valueType = KLV_VALUE_FLOAT};
-#define KLVIcingDetected (KLVElement) {.key = {34}, .valueType = KLV_VALUE_INT};
-#define KLVwindDirection (KLVElement) {.key = {35}, .valueType = KLV_VALUE_FLOAT};
-#define KLVWindSpeed (KLVElement) {.key = {36}, .valueType = KLV_VALUE_FLOAT};
-#define KLVStaticPressure (KLVElement) {.key = {37}, .valueType = KLV_VALUE_FLOAT};
-#define KLVDensityAltitude (KLVElement) {.key = {38}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOutsideAirTemperature (KLVElement) {.key = {39}, .valueType = KLV_VALUE_INT};
-#define KLVTargetLocationLatitude (KLVElement) {.key = {40}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVTargetLocationLongitude (KLVElement) {.key = {41}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVTargetLocationeElevation (KLVElement) {.key = {42}, .valueType = KLV_VALUE_FLOAT};
-#define KLVTargetTrackGateWidth (KLVElement) {.key = {43}, .valueType = KLV_VALUE_INT};
-#define KLVTargetTrackGateHeight (KLVElement) {.key = {44}, .valueType = KLV_VALUE_INT};
-#define KLVTargetErrorEstimateC90 (KLVElement) {.key = {45}, .valueType = KLV_VALUE_FLOAT};
-#define KLVTargetErrorEstimateLE90 (KLVElement) {.key = {46}, .valueType = KLV_VALUE_FLOAT};
-#define KLVGenericFlagData (KLVElement) {.key = {47}, .valueType = KLV_VALUE_INT};
-#define KLVSecurityLocalSet (KLVElement) {.key = {48}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVDifferentialPressure (KLVElement) {.key = {49}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformAngleOfAttack (KLVElement) {.key = {50}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformVerticalSpeed (KLVElement) {.key = {51}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformSideslipAngle (KLVElement) {.key = {52}, .valueType = KLV_VALUE_FLOAT};
-#define KLVAirfieldBarometricPressure (KLVElement) {.key = {53}, .valueType = KLV_VALUE_FLOAT};
-#define KLVAirfieldElevation (KLVElement) {.key = {54}, .valueType = KLV_VALUE_FLOAT};
-#define KLVRelavitveHumidity (KLVElement) {.key = {55}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformGroundSpeed (KLVElement) {.key = {56}, .valueType = KLV_VALUE_INT};
-#define KLVGroundRange (KLVElement) {.key = {57}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVPlatformFuelRemaining (KLVElement) {.key = {58}, .valueType = KLV_VALUE_FLOAT};
-#define KLVPlatformCallsign (KLVElement) {.key = {59}, .valueType = KLV_VALUE_STRING};
-#define KLVWeaponLoad (KLVElement) {.key = {60}, .valueType = KLV_VALUE_INT};
-#define KLVWeaponFired (KLVElement) {.key = {61}, .valueType = KLV_VALUE_INT};
-#define KLVLaserPRFCode (KLVElement) {.key = {62}, .valueType = KLV_VALUE_INT};
-#define KLVSensorFieldOfViewName (KLVElement) {.key = {63}, .valueType = KLV_VALUE_INT};
-#define KLVPlatfofmMagneticHeading (KLVElement) {.key = {64}, .valueType = KLV_VALUE_FLOAT};
-#define KLVUASDatalinkLSVersionNumber (KLVElement) {.key = {65}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVChecksum (KLVElement) {.key = {1}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVUnixTimeStamp (KLVElement) {.key = {2}, .valueType = KLV_VALUE_UINT64};
+#define GMK_KLVMissionID (KLVElement) {.key = {3}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVPlatformTailNumber (KLVElement) {.key = {4}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVPlatformHeadingAngle (KLVElement) {.key = {5}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformPitchAngle (KLVElement) {.key = {6}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformRollAngle (KLVElement) {.key = {7}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformTrueAirspeed (KLVElement) {.key = {8}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPlatformIndicatedAirspeed (KLVElement) {.key = {9}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPlatformDesignation (KLVElement) {.key = {10}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVImageSourceSensor (KLVElement) {.key = {11}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVImageCoordinateSystem (KLVElement) {.key = {12}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVSensorLatitude (KLVElement) {.key = {13}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVSensorLongitude (KLVElement) {.key = {14}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVSensorTrueAltitude (KLVElement) {.key = {15}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorHorizontalFieldOfView (KLVElement) {.key = {16}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorVerticalFieldOfView (KLVElement) {.key = {17}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorRelativeAzimuthAngle (KLVElement) {.key = {18}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVSensorRelativeElevationAngle (KLVElement) {.key = {19}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVSensorRelativeRollAngle (KLVElement) {.key = {20}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVSlantRange (KLVElement) {.key = {21}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVTargetWidth (KLVElement) {.key = {22}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVFrameCenterLatitude (KLVElement) {.key = {23}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVFrameCenterLongitude (KLVElement) {.key = {24}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVFrameCenterElevation (KLVElement) {.key = {25}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLatitudePoint1 (KLVElement) {.key = {26}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLongitudePoint1 (KLVElement) {.key = {27}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLatitudePoint2 (KLVElement) {.key = {28}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLongitudePoint2 (KLVElement) {.key = {29}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLatitudePoint3 (KLVElement) {.key = {30}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLongitudePoint3 (KLVElement) {.key = {31}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLatitudePoint4 (KLVElement) {.key = {32}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOffsetCornerLongitudePoint4 (KLVElement) {.key = {33}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVIcingDetected (KLVElement) {.key = {34}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVwindDirection (KLVElement) {.key = {35}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVWindSpeed (KLVElement) {.key = {36}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVStaticPressure (KLVElement) {.key = {37}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVDensityAltitude (KLVElement) {.key = {38}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOutsideAirTemperature (KLVElement) {.key = {39}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVTargetLocationLatitude (KLVElement) {.key = {40}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVTargetLocationLongitude (KLVElement) {.key = {41}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVTargetLocationeElevation (KLVElement) {.key = {42}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVTargetTrackGateWidth (KLVElement) {.key = {43}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVTargetTrackGateHeight (KLVElement) {.key = {44}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVTargetErrorEstimateC90 (KLVElement) {.key = {45}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVTargetErrorEstimateLE90 (KLVElement) {.key = {46}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVGenericFlagData (KLVElement) {.key = {47}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVSecurityLocalSet (KLVElement) {.key = {48}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVDifferentialPressure (KLVElement) {.key = {49}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformAngleOfAttack (KLVElement) {.key = {50}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformVerticalSpeed (KLVElement) {.key = {51}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformSideslipAngle (KLVElement) {.key = {52}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVAirfieldBarometricPressure (KLVElement) {.key = {53}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVAirfieldElevation (KLVElement) {.key = {54}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVRelavitveHumidity (KLVElement) {.key = {55}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformGroundSpeed (KLVElement) {.key = {56}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVGroundRange (KLVElement) {.key = {57}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVPlatformFuelRemaining (KLVElement) {.key = {58}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVPlatformCallsign (KLVElement) {.key = {59}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVWeaponLoad (KLVElement) {.key = {60}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVWeaponFired (KLVElement) {.key = {61}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVLaserPRFCode (KLVElement) {.key = {62}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVSensorFieldOfViewName (KLVElement) {.key = {63}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPlatfofmMagneticHeading (KLVElement) {.key = {64}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVUASDatalinkLSVersionNumber (KLVElement) {.key = {65}, .valueType = KLV_VALUE_INT};
 // item 66 is deprecated
-#define KLVAlternatePlatformLatitude (KLVElement) {.key = {67}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVAlternatePlatformLongitude (KLVElement) {.key = {68}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVAlternatePlatformAltitude (KLVElement) {.key = {69}, .valueType = KLV_VALUE_FLOAT};
-#define KLVAlternatePlatformName (KLVElement) {.key = {70}, .valueType = KLV_VALUE_STRING};
-#define KLVAlternatePlatformHeading (KLVElement) {.key = {71}, .valueType = KLV_VALUE_FLOAT};
-#define KLVEventStartTimeUTC (KLVElement) {.key = {72}, .valueType = KLV_VALUE_UINT64};
-#define KLVRVTLocalDataSet (KLVElement) {.key = {73}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVVMTILocalDataSet (KLVElement) {.key = {74}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVSensorEllipsoidHeight (KLVElement) {.key ={75}, .valueType = KLV_VALUE_FLOAT};
-#define KLVAlternatePlatformEllipsoidHeight (KLVElement) {.key ={76}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOperationalMode (KLVElement) {.key ={77}, .valueType = KLV_VALUE_INT};
-#define KLVFrameCenterHeightAboveEllipsoid (KLVElement) {.key ={78}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorNorthVelocity (KLVElement) {.key ={79}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorEastVelocity (KLVElement) {.key ={80}, .valueType = KLV_VALUE_FLOAT};
-#define KLVImageHorizonPixelPack (KLVElement) {.key ={81}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVCornerLatitudePoint1Full (KLVElement) {.key ={82}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLongitudePoint1Full (KLVElement) {.key ={83}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLatitudePoint2Full (KLVElement) {.key ={84}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLongitudePoint2Full (KLVElement) {.key ={85}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLatitudePoint3Full (KLVElement) {.key ={86}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLongitudePoint3Full (KLVElement) {.key ={87}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLatitudePoint4Full (KLVElement) {.key ={88}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVCornerLongitudePoint4Full (KLVElement) {.key ={89}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVPlatformPitchAngleFull (KLVElement) {.key ={90}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVPlatformRollAngleFull (KLVElement) {.key ={91}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVPlatformAngleOfAttackFull (KLVElement) {.key ={92}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVPlatformSideSlipAngleFull (KLVElement) {.key ={93}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVMIISCoreIdentifier (KLVElement) {.key ={94}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVSARMotionImageryMetadata (KLVElement) {.key ={95}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVTargetWidthExtended (KLVElement) {.key ={96}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVRangeImageLocalSet (KLVElement) {.key ={97}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVGeoRegistrationLocalSet (KLVElement) {.key ={98}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVCompositeImagingLocalSet (KLVElement) {.key ={99}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVSegmentLocalSet (KLVElement) {.key ={100}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVAmendLocalSet (KLVElement) {.key ={101}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVKLVSDCCFLP (KLVElement) {.key ={102}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVDensityAltitudeExtended (KLVElement) {.key ={103}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVDensityEllipsoidHeightExtended (KLVElement) {.key ={104}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVAlternatePlatformEllipsoidHeightExtended (KLVElement) {.key ={105}, .valueType = KLV_VALUE_DOUBLE};
-#define KLVStreamDesignator (KLVElement) {.key ={106}, .valueType = KLV_VALUE_STRING};
-#define KLVOperationalBase (KLVElement) {.key ={107}, .valueType = KLV_VALUE_STRING};
-#define KLVBroadcastSource (KLVElement) {.key ={108}, .valueType = KLV_VALUE_STRING};
-#define KLVRangeToRecoveryLocation (KLVElement) {.key ={109}, .valueType = KLV_VALUE_FLOAT};
-#define KLVTimeAirborne (KLVElement) {.key ={110}, .valueType = KLV_VALUE_INT};
-#define KLVPropulsionUnitSpeed (KLVElement) {.key ={111}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformCourseAngle (KLVElement) {.key ={112}, .valueType = KLV_VALUE_FLOAT};
-#define KLVAltitudeAGL (KLVElement) {.key ={113}, .valueType = KLV_VALUE_FLOAT};
-#define KLVRadarAltimeter (KLVElement) {.key ={114}, .valueType = KLV_VALUE_FLOAT};
-#define KLVControlCommand (KLVElement) {.key ={115}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVControlCommandVerificationList (KLVElement) {.key ={116}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVSensorAzimuthRate (KLVElement) {.key ={117}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorElevationRate (KLVElement) {.key ={118}, .valueType = KLV_VALUE_FLOAT};
-#define KLVSensorRollRate (KLVElement) {.key ={119}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOnboardMISStoragePercentFull (KLVElement) {.key ={120}, .valueType = KLV_VALUE_FLOAT};
-#define KLVActiveWaveLength (KLVElement) {.key ={121}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVKLVCountryCodes (KLVElement) {.key ={122}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVNumberofNAVSATsInView (KLVElement) {.key ={123}, .valueType = KLV_VALUE_INT};
-#define KLVPositioningMethodSource (KLVElement) {.key ={124}, .valueType = KLV_VALUE_INT};
-#define KLVPlatformStatus (KLVElement) {.key ={125}, .valueType = KLV_VALUE_INT};
-#define KLVSensorControlMode (KLVElement) {.key ={126}, .valueType = KLV_VALUE_INT};
-#define KLVSensorFrameRatePack (KLVElement) {.key ={127}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVWaveLenghtsList (KLVElement) {.key ={128}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVTargetID (KLVElement) {.key ={129}, .valueType = KLV_VALUE_STRING};
-#define KLVAirbaseLocations (KLVElement) {.key ={130}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVTakeoffTime (KLVElement) {.key ={131}, .valueType = KLV_VALUE_UINT64};
-#define KLVTransmissionFrequency (KLVElement) {.key ={132}, .valueType = KLV_VALUE_FLOAT};
-#define KLVOnboardMISStorageCapacity (KLVElement) {.key ={133}, .valueType = KLV_VALUE_INT};
-#define KLVZoomPercentage (KLVElement) {.key ={134}, .valueType = KLV_VALUE_FLOAT};
-#define KLVCommunicationsMethod (KLVElement) {.key ={135}, .valueType = KLV_VALUE_STRING};
-#define KLVLeapSeconds (KLVElement) {.key ={136}, .valueType = KLV_VALUE_INT};
-#define KLVCorrectionOffset (KLVElement) {.key ={137}, .valueType = KLV_VALUE_INT};
-#define KLVPayloadList (KLVElement) {.key ={138}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVActivePayloads (KLVElement) {.key ={139}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVWeaponStores (KLVElement) {.key ={140}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVWaypointList (KLVElement) {.key ={141}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVAlternatePlatformLatitude (KLVElement) {.key = {67}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVAlternatePlatformLongitude (KLVElement) {.key = {68}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVAlternatePlatformAltitude (KLVElement) {.key = {69}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVAlternatePlatformName (KLVElement) {.key = {70}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVAlternatePlatformHeading (KLVElement) {.key = {71}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVEventStartTimeUTC (KLVElement) {.key = {72}, .valueType = KLV_VALUE_UINT64};
+#define GMK_KLVRVTLocalDataSet (KLVElement) {.key = {73}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVVMTILocalDataSet (KLVElement) {.key = {74}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVSensorEllipsoidHeight (KLVElement) {.key ={75}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVAlternatePlatformEllipsoidHeight (KLVElement) {.key ={76}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOperationalMode (KLVElement) {.key ={77}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVFrameCenterHeightAboveEllipsoid (KLVElement) {.key ={78}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorNorthVelocity (KLVElement) {.key ={79}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorEastVelocity (KLVElement) {.key ={80}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVImageHorizonPixelPack (KLVElement) {.key ={81}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVCornerLatitudePoint1Full (KLVElement) {.key ={82}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLongitudePoint1Full (KLVElement) {.key ={83}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLatitudePoint2Full (KLVElement) {.key ={84}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLongitudePoint2Full (KLVElement) {.key ={85}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLatitudePoint3Full (KLVElement) {.key ={86}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLongitudePoint3Full (KLVElement) {.key ={87}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLatitudePoint4Full (KLVElement) {.key ={88}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVCornerLongitudePoint4Full (KLVElement) {.key ={89}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVPlatformPitchAngleFull (KLVElement) {.key ={90}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVPlatformRollAngleFull (KLVElement) {.key ={91}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVPlatformAngleOfAttackFull (KLVElement) {.key ={92}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVPlatformSideSlipAngleFull (KLVElement) {.key ={93}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVMIISCoreIdentifier (KLVElement) {.key ={94}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVSARMotionImageryMetadata (KLVElement) {.key ={95}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVTargetWidthExtended (KLVElement) {.key ={96}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVRangeImageLocalSet (KLVElement) {.key ={97}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVGeoRegistrationLocalSet (KLVElement) {.key ={98}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVCompositeImagingLocalSet (KLVElement) {.key ={99}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVSegmentLocalSet (KLVElement) {.key ={100}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVAmendLocalSet (KLVElement) {.key ={101}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVKLVSDCCFLP (KLVElement) {.key ={102}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVDensityAltitudeExtended (KLVElement) {.key ={103}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVDensityEllipsoidHeightExtended (KLVElement) {.key ={104}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVAlternatePlatformEllipsoidHeightExtended (KLVElement) {.key ={105}, .valueType = KLV_VALUE_DOUBLE};
+#define GMK_KLVStreamDesignator (KLVElement) {.key ={106}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVOperationalBase (KLVElement) {.key ={107}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVBroadcastSource (KLVElement) {.key ={108}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVRangeToRecoveryLocation (KLVElement) {.key ={109}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVTimeAirborne (KLVElement) {.key ={110}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPropulsionUnitSpeed (KLVElement) {.key ={111}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPlatformCourseAngle (KLVElement) {.key ={112}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVAltitudeAGL (KLVElement) {.key ={113}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVRadarAltimeter (KLVElement) {.key ={114}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVControlCommand (KLVElement) {.key ={115}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVControlCommandVerificationList (KLVElement) {.key ={116}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVSensorAzimuthRate (KLVElement) {.key ={117}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorElevationRate (KLVElement) {.key ={118}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVSensorRollRate (KLVElement) {.key ={119}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOnboardMISStoragePercentFull (KLVElement) {.key ={120}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVActiveWaveLength (KLVElement) {.key ={121}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVKLVCountryCodes (KLVElement) {.key ={122}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVNumberofNAVSATsInView (KLVElement) {.key ={123}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPositioningMethodSource (KLVElement) {.key ={124}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPlatformStatus (KLVElement) {.key ={125}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVSensorControlMode (KLVElement) {.key ={126}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVSensorFrameRatePack (KLVElement) {.key ={127}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVWaveLenghtsList (KLVElement) {.key ={128}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVTargetID (KLVElement) {.key ={129}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVAirbaseLocations (KLVElement) {.key ={130}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVTakeoffTime (KLVElement) {.key ={131}, .valueType = KLV_VALUE_UINT64};
+#define GMK_KLVTransmissionFrequency (KLVElement) {.key ={132}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVOnboardMISStorageCapacity (KLVElement) {.key ={133}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVZoomPercentage (KLVElement) {.key ={134}, .valueType = KLV_VALUE_FLOAT};
+#define GMK_KLVCommunicationsMethod (KLVElement) {.key ={135}, .valueType = KLV_VALUE_STRING};
+#define GMK_KLVLeapSeconds (KLVElement) {.key ={136}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVCorrectionOffset (KLVElement) {.key ={137}, .valueType = KLV_VALUE_INT};
+#define GMK_KLVPayloadList (KLVElement) {.key ={138}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVActivePayloads (KLVElement) {.key ={139}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVWeaponStores (KLVElement) {.key ={140}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVWaypointList (KLVElement) {.key ={141}, .valueType = KLV_VALUE_UNKNOWN};
 
 
 // Other parsing results 
-#define KLVParseError(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_UNKNOWN};
-#define KLVUnknown(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_PARSE_ERROR};
+#define GMK_KLVParseError(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_UNKNOWN};
+#define GMK_KLVUnknown(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_PARSE_ERROR};
 
 typedef struct KLVParser {
     STATE state;
@@ -395,6 +396,19 @@ typedef struct KLVParser {
     // The checksum element is saved as 
     KLVElement uasDataSet[MAX_UAS_TAGS];
 } KLVParser;
+
+// Creates a properly initialized empty KLV parser
+KLVParser klvParser() {
+    KLVParser parser = {};
+    parser.state = START_SET_KEY;
+    for(int i = 0; i < MAX_UAS_TAGS; i++) {
+        parser.uasDataSet[i] = (KLVElement) {} ;
+    }
+
+    parser.uasDataSetSize = 0;
+
+    return parser;
+}
 
 static int getLenFlag(uint8_t len)
 {
@@ -509,7 +523,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVChecksum;
+                *klv = GMK_KLVChecksum;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -518,7 +532,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 uint16_t LDS = ntohs(nVal);
                 klv->intValue = (int)nVal;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -526,7 +540,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVUnixTimeStamp;
+                *klv = GMK_KLVUnixTimeStamp;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -535,7 +549,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 memcpy(&lVal, klv->value, 8);
                 klv->uint64Value = ntohll(lVal);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -543,14 +557,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVMissionID;
+                *klv = GMK_KLVMissionID;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                     klv->stringValue = (char *)klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -558,14 +572,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVPlatformTailNumber;
+                *klv = GMK_KLVPlatformTailNumber;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->stringValue = (char *)klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -573,7 +587,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVPlatformHeadingAngle;
+                *klv = GMK_KLVPlatformHeadingAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -583,7 +597,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 uint16_t LDS = ntohs(nVal);
                 klv->floatValue = 360.0 / 0xFFFF * LDS;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -591,7 +605,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVPlatformPitchAngle;
+                *klv = GMK_KLVPlatformPitchAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -602,7 +616,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 40.0 / 0xFFFE * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -610,7 +624,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVPlatformRollAngle;
+                *klv = GMK_KLVPlatformRollAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -620,7 +634,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 short LDS = ntohs(nVal);
                 klv->floatValue = 100.0 / 0xFFFE * LDS;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -628,7 +642,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVPlatformTrueAirspeed;
+                *klv = GMK_KLVPlatformTrueAirspeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -636,7 +650,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -644,14 +658,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVPlatformIndicatedAirspeed;
+                *klv = GMK_KLVPlatformIndicatedAirspeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->intValue = (int)*klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -659,14 +673,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVPlatformDesignation;
+                *klv = GMK_KLVPlatformDesignation;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->stringValue = (char *)klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -674,14 +688,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVImageSourceSensor;
+                *klv = GMK_KLVImageSourceSensor;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->stringValue = (char *)klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -689,14 +703,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVImageCoordinateSystem;
+                *klv = GMK_KLVImageCoordinateSystem;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->stringValue = (char *)klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -704,7 +718,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorLatitude;
+                *klv = GMK_KLVSensorLatitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -716,7 +730,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -724,7 +738,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorLongitude;
+                *klv = GMK_KLVSensorLongitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -736,7 +750,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -744,7 +758,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVSensorTrueAltitude;
+                *klv = GMK_KLVSensorTrueAltitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -755,7 +769,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -763,7 +777,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVSensorHorizontalFieldOfView;
+                *klv = GMK_KLVSensorHorizontalFieldOfView;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -774,7 +788,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 180.0 / 0xFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -782,7 +796,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVSensorVerticalFieldOfView;
+                *klv = GMK_KLVSensorVerticalFieldOfView;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -793,7 +807,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 180.0 / 0xFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -801,7 +815,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorRelativeAzimuthAngle;
+                *klv = GMK_KLVSensorRelativeAzimuthAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -812,7 +826,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = 360.0 / 0xFFFFFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -820,7 +834,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorRelativeElevationAngle;
+                *klv = GMK_KLVSensorRelativeElevationAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -831,7 +845,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = 360.0 / 0xFFFFFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -839,7 +853,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorRelativeRollAngle;
+                *klv = GMK_KLVSensorRelativeRollAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -850,7 +864,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = 360.0 / 0xFFFFFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -858,7 +872,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSlantRange;
+                *klv = GMK_KLVSlantRange;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -869,7 +883,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = 5000000.0 / 0xFFFFFFFF * LDS;
                 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -877,18 +891,18 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVTargetWidth;
+                *klv = GMK_KLVTargetWidth;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else if (len == 4) { // it should be 2
-                *klv = KLVTargetWidth;
+                *klv = GMK_KLVTargetWidth;
                 p++;
                 p++;
                 for (size_t i = 0; i < 2; i++)
 				        klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
 
@@ -902,7 +916,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVFrameCenterLatitude;
+                *klv = GMK_KLVFrameCenterLatitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -914,7 +928,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
             
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -922,7 +936,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVFrameCenterLongitude;
+                *klv = GMK_KLVFrameCenterLongitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -934,7 +948,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -942,7 +956,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVFrameCenterElevation;
+                *klv = GMK_KLVFrameCenterElevation;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -954,7 +968,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -962,7 +976,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLatitudePoint1;
+                *klv = GMK_KLVOffsetCornerLatitudePoint1;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -973,7 +987,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
                 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -981,7 +995,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLongitudePoint1;
+                *klv = GMK_KLVOffsetCornerLongitudePoint1;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -992,7 +1006,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1000,7 +1014,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLatitudePoint2;
+                *klv = GMK_KLVOffsetCornerLatitudePoint2;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1012,7 +1026,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1020,7 +1034,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLongitudePoint2;
+                *klv = GMK_KLVOffsetCornerLongitudePoint2;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1031,7 +1045,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1039,7 +1053,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLatitudePoint3;
+                *klv = GMK_KLVOffsetCornerLatitudePoint3;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1050,7 +1064,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1058,7 +1072,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLongitudePoint3;
+                *klv =GMK_KLVOffsetCornerLongitudePoint3;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1070,7 +1084,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1078,7 +1092,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLatitudePoint4;
+                *klv = GMK_KLVOffsetCornerLatitudePoint4;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1089,7 +1103,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 short LDS = ntohs(nVal);
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1097,7 +1111,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVOffsetCornerLongitudePoint4;
+                *klv = GMK_KLVOffsetCornerLongitudePoint4;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1108,7 +1122,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (0.15 / 0xFFFE * LDS);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1116,14 +1130,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVIcingDetected;
+                *klv = GMK_KLVIcingDetected;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 klv->intValue = (int)*klv->value;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1131,7 +1145,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVwindDirection;
+                *klv = GMK_KLVwindDirection;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1143,7 +1157,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1151,7 +1165,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVWindSpeed;
+                *klv = GMK_KLVWindSpeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1160,7 +1174,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		         klv->floatValue = (100.0 / 0xFF) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1168,7 +1182,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVStaticPressure;
+                *klv = GMK_KLVStaticPressure;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1179,7 +1193,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->floatValue = (5000.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1187,7 +1201,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVDensityAltitude;
+                *klv = GMK_KLVDensityAltitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1198,7 +1212,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1206,7 +1220,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVOutsideAirTemperature;
+                *klv = GMK_KLVOutsideAirTemperature;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1214,7 +1228,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1222,7 +1236,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVTargetLocationLatitude;
+                *klv = GMK_KLVTargetLocationLatitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1234,7 +1248,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1242,7 +1256,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVTargetLocationLongitude;
+                *klv = GMK_KLVTargetLocationLongitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1254,7 +1268,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1263,7 +1277,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVTargetLocationeElevation;
+                *klv = GMK_KLVTargetLocationeElevation;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1274,7 +1288,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1284,7 +1298,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVTargetTrackGateWidth;
+                *klv = GMK_KLVTargetTrackGateWidth;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1292,7 +1306,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 2.0 * *klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1301,7 +1315,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVTargetTrackGateHeight;
+                *klv = GMK_KLVTargetTrackGateHeight;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1309,7 +1323,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 2.0 * *klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1319,7 +1333,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVTargetErrorEstimateC90;
+                *klv = GMK_KLVTargetErrorEstimateC90;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1329,7 +1343,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->floatValue = (4095.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1339,7 +1353,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 2) {
-                *klv = KLVTargetErrorEstimateLE90;
+                *klv = GMK_KLVTargetErrorEstimateLE90;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1349,7 +1363,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        klv->floatValue = (4095.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1359,7 +1373,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVGenericFlagData;
+                *klv = GMK_KLVGenericFlagData;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1367,7 +1381,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1378,13 +1392,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVSecurityLocalSet;
+                *klv = GMK_KLVSecurityLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1393,7 +1407,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVDifferentialPressure;
+                *klv = GMK_KLVDifferentialPressure;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1404,7 +1418,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (5000.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1414,7 +1428,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVPlatformAngleOfAttack;
+                *klv = GMK_KLVPlatformAngleOfAttack;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1425,7 +1439,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (40.0 / 65534.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1434,7 +1448,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVPlatformVerticalSpeed;
+                *klv = GMK_KLVPlatformVerticalSpeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1445,7 +1459,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (360.0 / 65534.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1455,7 +1469,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVPlatformSideslipAngle;
+                *klv = GMK_KLVPlatformSideslipAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1466,7 +1480,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (40.0 / 65534.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1476,7 +1490,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len < 2) {
-                *klv = KLVAirfieldBarometricPressure;
+                *klv = GMK_KLVAirfieldBarometricPressure;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1487,7 +1501,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (5000.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1497,7 +1511,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVAirfieldBarometricPressure;
+                *klv = GMK_KLVAirfieldBarometricPressure;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1508,7 +1522,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1518,7 +1532,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVRelavitveHumidity;
+                *klv = GMK_KLVRelavitveHumidity;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1527,7 +1541,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (100 / 0xFF) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1536,7 +1550,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVPlatformGroundSpeed;
+                *klv = GMK_KLVPlatformGroundSpeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1544,7 +1558,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1554,7 +1568,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVGroundRange;
+                *klv = GMK_KLVGroundRange;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1565,7 +1579,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = 5000000.0 / 0xFFFFFFFF * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1575,7 +1589,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVPlatformFuelRemaining;
+                *klv = GMK_KLVPlatformFuelRemaining;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1586,7 +1600,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (10000.0 / 65535.0) * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1596,7 +1610,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 127) {
-                *klv = KLVPlatformCallsign;
+                *klv = GMK_KLVPlatformCallsign;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1604,7 +1618,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->stringValue = (char *)klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -1614,7 +1628,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVWeaponLoad;
+                *klv = GMK_KLVWeaponLoad;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1624,7 +1638,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int) ntohs(nVal);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1634,7 +1648,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVWeaponFired;
+                *klv = GMK_KLVWeaponFired;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1642,7 +1656,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;                              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1652,7 +1666,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVLaserPRFCode;
+                *klv = GMK_KLVLaserPRFCode;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1662,7 +1676,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)ntohs(nVal);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1672,7 +1686,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVSensorFieldOfViewName;
+                *klv = GMK_KLVSensorFieldOfViewName;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1680,7 +1694,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;                              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1690,7 +1704,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVPlatfofmMagneticHeading;
+                *klv = GMK_KLVPlatfofmMagneticHeading;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1701,7 +1715,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 360.0 / 0xFFFF * LDS;                          
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1711,7 +1725,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVUASDatalinkLSVersionNumber;
+                *klv = GMK_KLVUASDatalinkLSVersionNumber;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1719,7 +1733,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;                              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1731,12 +1745,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 
             //deprecated
             if(len <= 0) {
-                *klv = KLVWeaponFired;
+                *klv = GMK_KLVWeaponFired;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1746,7 +1760,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVAlternatePlatformLatitude;
+                *klv = GMK_KLVAlternatePlatformLatitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1758,7 +1772,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;                           
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1768,7 +1782,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVAlternatePlatformLongitude;
+                *klv = GMK_KLVAlternatePlatformLongitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1780,7 +1794,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;                           
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -1790,7 +1804,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVAlternatePlatformAltitude;
+                *klv = GMK_KLVAlternatePlatformAltitude;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1801,7 +1815,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;                 
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1811,7 +1825,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 127) {
-                *klv = KLVAlternatePlatformName;
+                *klv = GMK_KLVAlternatePlatformName;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1819,7 +1833,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->stringValue = (char *)klv->value;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -1829,7 +1843,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVAlternatePlatformHeading;
+                *klv = GMK_KLVAlternatePlatformHeading;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1840,7 +1854,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (360.0 / 65535.0) * LDS;                        
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1850,7 +1864,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 8) {
-                *klv = KLVEventStartTimeUTC;
+                *klv = GMK_KLVEventStartTimeUTC;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1860,7 +1874,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->uint64Value = ntohll(lVal);                       
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1870,13 +1884,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size); 
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVEventStartTimeUTC;
+                *klv = GMK_KLVEventStartTimeUTC;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1887,13 +1901,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size); 
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVEventStartTimeUTC;
+                *klv = GMK_KLVEventStartTimeUTC;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1903,7 +1917,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVSensorEllipsoidHeight;
+                *klv = GMK_KLVSensorEllipsoidHeight;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1914,7 +1928,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;                     
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1923,7 +1937,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVAlternatePlatformEllipsoidHeight;
+                *klv = GMK_KLVAlternatePlatformEllipsoidHeight;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1934,7 +1948,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;    
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1943,7 +1957,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 1) {
-                *klv = KLVOperationalMode;
+                *klv = GMK_KLVOperationalMode;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1951,7 +1965,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;   
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1960,7 +1974,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVFrameCenterHeightAboveEllipsoid;
+                *klv =GMK_KLVFrameCenterHeightAboveEllipsoid;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1971,7 +1985,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = (19900.0 / 0xFFFF * LDS) - 900;  
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -1980,7 +1994,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVSensorNorthVelocity;
+                *klv =  GMK_KLVSensorNorthVelocity;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -1991,7 +2005,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 654.0 / 65534.0 * LDS; 
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2000,7 +2014,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 2) {
-                *klv = KLVSensorEastVelocity;
+                *klv = GMK_KLVSensorEastVelocity;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2011,7 +2025,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = 654.0 / 65534.0 * LDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2021,13 +2035,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size); 
             p += numOfBytesRead;
             if(len <= size) {
-                *klv = KLVImageHorizonPixelPack;
+                *klv = GMK_KLVImageHorizonPixelPack;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2036,7 +2050,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLatitudePoint1Full;
+                *klv = GMK_KLVCornerLatitudePoint1Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2048,7 +2062,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2058,7 +2072,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLongitudePoint1Full;
+                *klv = GMK_KLVCornerLongitudePoint1Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2070,7 +2084,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2079,7 +2093,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLatitudePoint2Full;
+                *klv = GMK_KLVCornerLatitudePoint2Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2091,7 +2105,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2100,7 +2114,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLongitudePoint2Full;
+                *klv = GMK_KLVCornerLongitudePoint2Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2112,7 +2126,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break; 
@@ -2121,7 +2135,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLatitudePoint3Full;
+                *klv = GMK_KLVCornerLatitudePoint3Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2133,7 +2147,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2142,7 +2156,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLongitudePoint3Full;
+                *klv = GMK_KLVCornerLongitudePoint3Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2154,7 +2168,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2163,7 +2177,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLatitudePoint4Full;
+                *klv = GMK_KLVCornerLatitudePoint4Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2175,7 +2189,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2184,7 +2198,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVCornerLongitudePoint4Full;
+                *klv = GMK_KLVCornerLongitudePoint4Full;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2196,7 +2210,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2205,7 +2219,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVPlatformPitchAngleFull;
+                *klv = GMK_KLVPlatformPitchAngleFull;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2217,7 +2231,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2226,7 +2240,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVPlatformRollAngleFull;
+                *klv = GMK_KLVPlatformRollAngleFull;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2238,7 +2252,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2247,7 +2261,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVPlatformAngleOfAttackFull;
+                *klv = GMK_KLVPlatformAngleOfAttackFull;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2259,7 +2273,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2268,7 +2282,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 4) {
-                *klv = KLVPlatformSideSlipAngleFull;
+                *klv = GMK_KLVPlatformSideSlipAngleFull;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2280,7 +2294,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = UDS;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2289,12 +2303,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 50) {
-                *klv =  KLVMIISCoreIdentifier;
+                *klv = GMK_KLVMIISCoreIdentifier;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2304,12 +2318,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv =  KLVSARMotionImageryMetadata;
+                *klv =  GMK_KLVSARMotionImageryMetadata;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2318,7 +2332,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++]; 
             if(len <= 8) {
-                *klv = KLVTargetWidthExtended;
+                *klv = GMK_KLVTargetWidthExtended;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2327,7 +2341,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->floatValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2337,13 +2351,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVRangeImageLocalSet;
+                *klv = GMK_KLVRangeImageLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2352,13 +2366,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVGeoRegistrationLocalSet;
+                *klv = GMK_KLVGeoRegistrationLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2368,13 +2382,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVCompositeImagingLocalSet;
+                *klv = GMK_KLVCompositeImagingLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2384,13 +2398,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVSegmentLocalSet;
+                *klv = GMK_KLVSegmentLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;   
@@ -2400,13 +2414,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVAmendLocalSet;
+                *klv = GMK_KLVAmendLocalSet;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2416,13 +2430,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVKLVSDCCFLP;
+                *klv = GMK_KLVKLVSDCCFLP;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2431,7 +2445,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVDensityAltitudeExtended;
+                *klv = GMK_KLVDensityAltitudeExtended;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2440,7 +2454,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2449,7 +2463,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVDensityEllipsoidHeightExtended;
+                *klv = GMK_KLVDensityEllipsoidHeightExtended;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2458,7 +2472,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2467,7 +2481,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVAlternatePlatformEllipsoidHeightExtended;
+                *klv = GMK_KLVAlternatePlatformEllipsoidHeightExtended;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2476,7 +2490,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2485,13 +2499,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVStreamDesignator;
+                *klv = GMK_KLVStreamDesignator;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2501,13 +2515,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVOperationalBase;
+                *klv = GMK_KLVOperationalBase;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2517,12 +2531,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVBroadcastSource;
+                *klv = GMK_KLVBroadcastSource;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2532,7 +2546,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVRangeToRecoveryLocation;
+                *klv = GMK_KLVRangeToRecoveryLocation;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2540,7 +2554,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 FPParser fpp = fpParserOf(0.0, 21000.0, klv->length);
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2550,7 +2564,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVBroadcastSource;
+                *klv = GMK_KLVBroadcastSource;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2561,7 +2575,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = val;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2571,7 +2585,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVPropulsionUnitSpeed;
+                *klv = GMK_KLVPropulsionUnitSpeed;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2582,7 +2596,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = val;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2592,7 +2606,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVPlatformCourseAngle;
+                *klv = GMK_KLVPlatformCourseAngle;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2601,7 +2615,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2610,7 +2624,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVAltitudeAGL;
+                *klv = GMK_KLVAltitudeAGL;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2619,7 +2633,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2628,7 +2642,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVRadarAltimeter;
+                *klv = GMK_KLVRadarAltimeter;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2638,7 +2652,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2647,13 +2661,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVControlCommand;
+                *klv = GMK_KLVControlCommand;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2662,13 +2676,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVControlCommandVerificationList;
+                *klv = GMK_KLVControlCommandVerificationList;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];                
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2676,7 +2690,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorAzimuthRate;
+                *klv = GMK_KLVSensorAzimuthRate;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2685,7 +2699,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2693,7 +2707,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorElevationRate;
+                *klv = GMK_KLVSensorElevationRate;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2702,7 +2716,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2710,7 +2724,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVSensorRollRate;
+                *klv = GMK_KLVSensorRollRate;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2719,7 +2733,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2727,7 +2741,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 3) {
-                *klv = KLVOnboardMISStoragePercentFull;
+                *klv = GMK_KLVOnboardMISStoragePercentFull;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2736,7 +2750,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2745,13 +2759,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVActiveWaveLength;
+                *klv = GMK_KLVActiveWaveLength;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];             
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2760,13 +2774,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVKLVCountryCodes;
+                *klv = GMK_KLVKLVCountryCodes;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];             
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2774,7 +2788,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 3) {
-                *klv = KLVNumberofNAVSATsInView;
+                *klv = GMK_KLVNumberofNAVSATsInView;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2782,7 +2796,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;          
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         } break;
@@ -2790,7 +2804,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVPositioningMethodSource;
+                *klv = GMK_KLVPositioningMethodSource;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2798,7 +2812,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2806,7 +2820,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVPlatformStatus;
+                *klv = GMK_KLVPlatformStatus;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2814,7 +2828,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2822,7 +2836,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = buf[p++];
             if(len <= 1) {
-                *klv = KLVSensorControlMode;
+                *klv = GMK_KLVSensorControlMode;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2830,7 +2844,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->intValue = (int)*klv->value;              
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2839,12 +2853,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len <= 16) {
-                *klv = KLVSensorFrameRatePack;
+                *klv = GMK_KLVSensorFrameRatePack;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2853,12 +2867,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVWaveLenghtsList;
+                *klv = GMK_KLVWaveLenghtsList;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2866,14 +2880,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 32) {
-                *klv = KLVTargetID;
+                *klv = GMK_KLVTargetID;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 // string
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2882,12 +2896,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len <= 24) {
-                *klv = KLVAirbaseLocations;
+                *klv = GMK_KLVAirbaseLocations;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2895,7 +2909,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVTakeoffTime;
+                *klv = GMK_KLVTakeoffTime;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2905,7 +2919,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 int64_t time = ntohll(lVal);
                 klv->uint64Value = time / 1000000;
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2913,7 +2927,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVTransmissionFrequency;
+                *klv = GMK_KLVTransmissionFrequency;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2921,7 +2935,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 FPParser fpp = fpParserOf(1.0, 99999.0, klv->length);
                 klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2929,7 +2943,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVOnboardMISStorageCapacity;
+                *klv = GMK_KLVOnboardMISStorageCapacity;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2938,7 +2952,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        memcpy(&nVal, klv->value, 4);
 		        klv->intValue = ntohl(nVal);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2946,7 +2960,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVZoomPercentage;
+                *klv = GMK_KLVZoomPercentage;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2956,7 +2970,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 
   
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2964,13 +2978,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 127) {
-                *klv = KLVCommunicationsMethod;
+                *klv = GMK_KLVCommunicationsMethod;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
                 //string
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2978,7 +2992,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 4) {
-                *klv = KLVLeapSeconds;
+                *klv = GMK_KLVLeapSeconds;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -2987,7 +3001,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 		        memcpy(&nVal, klv->value, 4);
 		        klv->intValue = ntohl(nVal);
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -2995,7 +3009,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
     	    int len = buf[p++];
             if(len <= 8) {
-                *klv = KLVCorrectionOffset;
+                *klv = GMK_KLVCorrectionOffset;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
@@ -3006,7 +3020,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 klv->uint64Value = time / 1000000;
 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -3015,14 +3029,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVPayloadList;
+                *klv = GMK_KLVPayloadList;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -3031,14 +3045,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVActivePayloads;
+                *klv = GMK_KLVActivePayloads;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -3047,12 +3061,12 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVWeaponStores;
+                *klv = GMK_KLVWeaponStores;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -3061,14 +3075,14 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
 		    p += numOfBytesRead;
             if(len < size) {
-                *klv = KLVWaypointList;
+                *klv = GMK_KLVWaypointList;
                 klv->length = len;
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
                 
             } else {
-                *klv = KLVParseError(key);
+                *klv = GMK_KLVParseError(key);
                 p += len;
             }
         }
@@ -3076,7 +3090,7 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
         {
             int len = decodeBERLength(&numOfBytesRead, buf + p, size);
             p += numOfBytesRead;
-            *klv = KLVUnknown(key);
+            *klv = GMK_KLVUnknown(key);
             klv->length = len;
             for(size_t i = 0; i < len; i++)
                 klv->value[i] = buf[p++];
@@ -3093,10 +3107,15 @@ static int klvParseUniversalSetElement(KLVElement *klv, uint8_t *data, size_t si
 
 
 static void onElement(KLVParser *parser, const KLVElement klv) {
-    if(key(klv) == 1) {
+    uint8_t klvKey = key(klv);
+    if(klvKey== 1) {
         parser->checksumElement = klv;
     }
-    parser->uasDataSet[key(klv)] = klv;
+
+    if(parser->uasDataSetSize < MAX_UAS_TAGS) {
+        parser->uasDataSet[parser->uasDataSetSize] = klv;
+        parser->uasDataSetSize++;
+    }
 }
 
 static void onBeginSet(KLVParser *parser, int len, TYPE type) {
@@ -3122,6 +3141,11 @@ static void onEndSet(KLVParser *parser) {
         parser->sodb[i] = 0;
     }
     parser->sodbSize = 0;
+
+    for(size_t i = 0; i < parser->uasDataSetSize; i++) {
+        parser->uasDataSet[i] = (KLVElement) {};
+    }
+    parser->uasDataSetSize = 0;
 }
 
 static void onBegin(KLVParser *parser, int len) {
@@ -3226,7 +3250,7 @@ void parse(KLVParser* parser, const uint8_t* chunk, const int length, void (*onE
 
         if(parser->state == PARSING) {
             int n = 0;
-            while(n <= parser->setSize) {
+            while(n < parser->setSize) {
                 KLVElement klv;
                 if(parser->type == LOCAL_SET) {
                     n += klvParse(&klv, parser->buffer + n, parser->setSize);
@@ -3239,7 +3263,7 @@ void parse(KLVParser* parser, const uint8_t* chunk, const int length, void (*onE
                 }
                 onElement(parser, klv);
             }
-            onEndSetCallback(parser->uasDataSet, MAX_UAS_TAGS);
+            onEndSetCallback(parser->uasDataSet, parser->uasDataSetSize);
             onEndSet(parser);
         }
     }

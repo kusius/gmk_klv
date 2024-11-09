@@ -8,6 +8,7 @@
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
                 "-g",
+                "testdata.o",
                 "${file}",
                 "-o",
                 "${workspaceFolder}/build/${fileBasenameNoExtension}"
