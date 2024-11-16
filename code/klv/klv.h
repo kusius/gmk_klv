@@ -3110,9 +3110,7 @@ static void onElement(KLVParser *parser, const KLVElement klv) {
     uint8_t klvKey = key(klv);
     if(klvKey== 1) {
         parser->checksumElement = klv;
-    }
-
-    if(parser->uasDataSetSize < MAX_UAS_TAGS) {
+    } else if(parser->uasDataSetSize < MAX_UAS_TAGS) {
         parser->uasDataSet[parser->uasDataSetSize] = klv;
         parser->uasDataSetSize++;
     }
