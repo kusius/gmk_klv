@@ -6,24 +6,27 @@
  * For ease of use in other programs or embedded in other languages.
  */
 
-#if !defined KLV_H
+#ifndef KLV_H
 #define KLV_H
+
+#ifndef GMKKLV
+#define GMKKLV static
+#endif
 
 #include <stdint.h>
 
-#define MAX_UAS_TAGS 143
-struct KLVElement;
-enum KLVValueType;
-struct KLVParser;
+struct gmk_KLVElement;
+enum gmk_KLVValueType;
+struct gmk_KLVParser;
 
-struct KLVParser klvParser();
-void parse(struct KLVParser* parser, const uint8_t* chunk, const int length, void (*onEndSetCallback)(struct KLVElement *, int));
-uint8_t key(const struct KLVElement klv);
+GMKKLV struct gmk_KLVParser gmk_newKlvParser();
+GMKKLV void gmk_klvParse(struct gmk_KLVParser* parser, const uint8_t* chunk, const int length, void (*onEndSetCallback)(struct gmk_KLVElement *, int));
+GMKKLV uint8_t gmk_klvKey(const struct gmk_KLVElement klv);
 
 #endif // !KLV_H
 
 
-#if defined KLV_IMPLEMENTATION
+#if defined GMK_KLV_IMPLEMENTATION
 
 // ntohs, ntohl
 #if  defined(_WIN32) || defined(WIN32)
@@ -42,67 +45,68 @@ uint8_t key(const struct KLVElement klv);
 #if !defined MAX_PARSE_BYTES
 #define MAX_PARSE_BYTES KILOBYTES(1)
 #endif
+#define MAX_UAS_TAGS 143
 
-const uint8_t LocalSetKey[] = { 
+const uint8_t gmk__LocalSetKey[] = { 
     0x06,0x0E,0x2B,0x34,
 	0x02,0x0B,0x01,0x01,
 	0x0E,0x01,0x03,0x01,
 	0x01,0x00,0x00,0x00 
 };
 
-const uint8_t SecurityMetadataUniversalSetKey[] = {
+const uint8_t gmk__SecurityMetadataUniversalSetKey[] = {
     0x06,0x0E,0x2B,0x34,
     0x02,0x01,0x01,0x01,
     0x02,0x08,0x02,0x00,
     0x00,0x00,0x00,0x00
 };
 
-const uint8_t UniversalMetadataSetKey[] = {
+const uint8_t gmk__UniversalMetadataSetKey[] = {
     0x06,0x0E,0x2B,0x34,
     0x02,0x01,0x01,0x01,
     0x0E,0x01,0x01,0x02,
     0x01,0x01,0x00,0x00
 };
 
-const uint8_t UniversalMetadataElementKey[] = { 
+const uint8_t gmk__UniversalMetadataElementKey[] = { 
     0x06, 0x0E, 0x2B, 0x34, 0x01 
 };
 
-typedef enum TYPE {
+typedef enum gmk__SET_TYPE {
     LOCAL_SET, 
     UNIVERSAL_SET,
     SECURITY_UNIVERSAL_SET,  
     UNIVERSAL_ELEMENT, 
     UNKNOWN 
-} TYPE;
+} gmk__SET_TYPE;
 
-typedef enum STATE {
+typedef enum gmk__PARSER_STATE {
     START_SET_KEY,
     START_SET_LEN_FLAG,
     START_SET_LEN,
     LEXING,
     PARSING
-} STATE;
+} gmk__PARSER_STATE;
 
-enum KLVValueType {
-    KLV_VALUE_STRING,
+enum gmk_KLVValueType {
+    GMK_KLV_VALUE_STRING,
     // in reality these are more strictly defined (uint_x, int_x)
     // but we are choosing simplicity here and encoding all numericals into integers
-    KLV_VALUE_INT,
-    KLV_VALUE_FLOAT,
-    KLV_VALUE_DOUBLE,
-    KLV_VALUE_UINT64,
-    KLV_VALUE_UNKNOWN,
-    KLV_VALUE_PARSE_ERROR,
+    GMK_KLV_VALUE_INT,
+    GMK_KLV_VALUE_FLOAT,
+    GMK_KLV_VALUE_DOUBLE,
+    GMK_KLV_VALUE_UINT64,
+    GMK_KLV_VALUE_UNKNOWN,
+    GMK_KLV_VALUE_PARSE_ERROR,
 };
 
-typedef struct KLVElement {
+typedef struct gmk_KLVElement {
     // maximum bytes a key can be is 16
     uint8_t key[16];
     int keyLength;
     int length;
     uint8_t value[256];
-    enum KLVValueType valueType;
+    enum gmk_KLVValueType valueType;
     union {
         int intValue;
         float floatValue; 
@@ -110,7 +114,7 @@ typedef struct KLVElement {
         char *stringValue;
         uint64_t uint64Value;
     };
-} KLVElement;
+} gmk_KLVElement;
 
 static uint8_t POSITIVE_INFINITY_HIGH_BYTE = 0xC8;
 static uint8_t NEGATIVE_INFINITY_HIGH_BYTE = 0xE8;
@@ -118,7 +122,7 @@ static uint8_t POSITIVE_QUIET_NAN_HIGH_BYTE = 0xD0;
 static uint8_t NEGATIVE_QUIET_NAN_HIGH_BYTE = 0xF0;
 static uint8_t HIGH_BYTE_MASK = 0xF8;
 
-typedef struct FPParser {
+typedef struct gmk__FPParser {
         double a;
 		double b;
 		double bPow;
@@ -127,10 +131,10 @@ typedef struct FPParser {
 		double sF;
 		double sR;
 		double zOffset;
-} FPParser;
+} gmk__FPParser;
 
-FPParser fpParserOf(double min, double max, int length) {
-    FPParser fpParser = {};
+gmk__FPParser gmk__fpParserOf(double min, double max, int length) {
+    gmk__FPParser fpParser = {};
     fpParser.a = min;
     fpParser.b = max;
     fpParser.length = length;
@@ -147,7 +151,7 @@ FPParser fpParserOf(double min, double max, int length) {
     return fpParser;
 }
 
-double fpParserDecodeAsNormalMappedValue(FPParser *fpParser, const unsigned char* valueBuffer, int bufsiz) {
+double gmk__fpParserDecodeAsNormalMappedValue(gmk__FPParser *fpParser, const unsigned char* valueBuffer, int bufsiz) {
     	double val = 0.0;
 
 		switch (fpParser->length)
@@ -196,13 +200,13 @@ double fpParserDecodeAsNormalMappedValue(FPParser *fpParser, const unsigned char
 		return val;
 }
 
-double fpParserDecode(FPParser *fpParser, const unsigned char *buffer, int bufsiz) {
+double gmk__fpParserDecode(gmk__FPParser *fpParser, const unsigned char *buffer, int bufsiz) {
     	if (bufsiz > fpParser->length)
 			return nan("");
 
 		if ((buffer[0] & 0x80) == 0x00)
 		{
-			return fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
+			return gmk__fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
 		}
 		// Check if it is -1
 		else if (buffer[0] == 0x80) {
@@ -214,7 +218,7 @@ double fpParserDecode(FPParser *fpParser, const unsigned char *buffer, int bufsi
 				}
 			}
 			if (allZeros) {
-				return fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
+				return gmk__fpParserDecodeAsNormalMappedValue(fpParser, buffer, bufsiz);
 			}
 		}
 
@@ -230,161 +234,161 @@ double fpParserDecode(FPParser *fpParser, const unsigned char *buffer, int bufsi
 		}
 }
 
-uint8_t key(const KLVElement klv) {
+GMKKLV uint8_t gmk_klvKey(const gmk_KLVElement klv) {
     return klv.keyLength == 0 ? 0 : klv.key[0];
 }
 
 // The UAS dataset klv elements we parse
-#define GMK_KLVChecksum (KLVElement) {.key = {1}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVUnixTimeStamp (KLVElement) {.key = {2}, .valueType = KLV_VALUE_UINT64};
-#define GMK_KLVMissionID (KLVElement) {.key = {3}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVPlatformTailNumber (KLVElement) {.key = {4}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVPlatformHeadingAngle (KLVElement) {.key = {5}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformPitchAngle (KLVElement) {.key = {6}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformRollAngle (KLVElement) {.key = {7}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformTrueAirspeed (KLVElement) {.key = {8}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPlatformIndicatedAirspeed (KLVElement) {.key = {9}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPlatformDesignation (KLVElement) {.key = {10}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVImageSourceSensor (KLVElement) {.key = {11}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVImageCoordinateSystem (KLVElement) {.key = {12}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVSensorLatitude (KLVElement) {.key = {13}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVSensorLongitude (KLVElement) {.key = {14}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVSensorTrueAltitude (KLVElement) {.key = {15}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorHorizontalFieldOfView (KLVElement) {.key = {16}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorVerticalFieldOfView (KLVElement) {.key = {17}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorRelativeAzimuthAngle (KLVElement) {.key = {18}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVSensorRelativeElevationAngle (KLVElement) {.key = {19}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVSensorRelativeRollAngle (KLVElement) {.key = {20}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVSlantRange (KLVElement) {.key = {21}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVTargetWidth (KLVElement) {.key = {22}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVFrameCenterLatitude (KLVElement) {.key = {23}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVFrameCenterLongitude (KLVElement) {.key = {24}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVFrameCenterElevation (KLVElement) {.key = {25}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLatitudePoint1 (KLVElement) {.key = {26}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLongitudePoint1 (KLVElement) {.key = {27}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLatitudePoint2 (KLVElement) {.key = {28}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLongitudePoint2 (KLVElement) {.key = {29}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLatitudePoint3 (KLVElement) {.key = {30}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLongitudePoint3 (KLVElement) {.key = {31}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLatitudePoint4 (KLVElement) {.key = {32}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOffsetCornerLongitudePoint4 (KLVElement) {.key = {33}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVIcingDetected (KLVElement) {.key = {34}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVwindDirection (KLVElement) {.key = {35}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVWindSpeed (KLVElement) {.key = {36}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVStaticPressure (KLVElement) {.key = {37}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVDensityAltitude (KLVElement) {.key = {38}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOutsideAirTemperature (KLVElement) {.key = {39}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVTargetLocationLatitude (KLVElement) {.key = {40}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVTargetLocationLongitude (KLVElement) {.key = {41}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVTargetLocationeElevation (KLVElement) {.key = {42}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVTargetTrackGateWidth (KLVElement) {.key = {43}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVTargetTrackGateHeight (KLVElement) {.key = {44}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVTargetErrorEstimateC90 (KLVElement) {.key = {45}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVTargetErrorEstimateLE90 (KLVElement) {.key = {46}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVGenericFlagData (KLVElement) {.key = {47}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVSecurityLocalSet (KLVElement) {.key = {48}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVDifferentialPressure (KLVElement) {.key = {49}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformAngleOfAttack (KLVElement) {.key = {50}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformVerticalSpeed (KLVElement) {.key = {51}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformSideslipAngle (KLVElement) {.key = {52}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVAirfieldBarometricPressure (KLVElement) {.key = {53}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVAirfieldElevation (KLVElement) {.key = {54}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVRelavitveHumidity (KLVElement) {.key = {55}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformGroundSpeed (KLVElement) {.key = {56}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVGroundRange (KLVElement) {.key = {57}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVPlatformFuelRemaining (KLVElement) {.key = {58}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVPlatformCallsign (KLVElement) {.key = {59}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVWeaponLoad (KLVElement) {.key = {60}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVWeaponFired (KLVElement) {.key = {61}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVLaserPRFCode (KLVElement) {.key = {62}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVSensorFieldOfViewName (KLVElement) {.key = {63}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPlatfofmMagneticHeading (KLVElement) {.key = {64}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVUASDatalinkLSVersionNumber (KLVElement) {.key = {65}, .valueType = KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVChecksum = {. key = {1}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVUnixTimeStamp =  {.key = {2}, .valueType = GMK_KLV_VALUE_UINT64};
+const gmk_KLVElement GMK_KLVMissionID =  {.key = {3}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVPlatformTailNumber =  {.key = {4}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVPlatformHeadingAngle =  {.key = {5}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformPitchAngle =  {.key = {6}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformRollAngle =  {.key = {7}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformTrueAirspeed =  {.key = {8}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPlatformIndicatedAirspeed =  {.key = {9}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPlatformDesignation =  {.key = {10}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVImageSourceSensor =  {.key = {11}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVImageCoordinateSystem =  {.key = {12}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVSensorLatitude =  {.key = {13}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVSensorLongitude =  {.key = {14}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVSensorTrueAltitude =  {.key = {15}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorHorizontalFieldOfView =  {.key = {16}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorVerticalFieldOfView =  {.key = {17}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorRelativeAzimuthAngle =  {.key = {18}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVSensorRelativeElevationAngle =  {.key = {19}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVSensorRelativeRollAngle =  {.key = {20}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVSlantRange =  {.key = {21}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVTargetWidth =  {.key = {22}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVFrameCenterLatitude =  {.key = {23}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVFrameCenterLongitude =  {.key = {24}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVFrameCenterElevation =  {.key = {25}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLatitudePoint1 =  {.key = {26}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLongitudePoint1 =  {.key = {27}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLatitudePoint2 =  {.key = {28}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLongitudePoint2 =  {.key = {29}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLatitudePoint3 =  {.key = {30}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLongitudePoint3 =  {.key = {31}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLatitudePoint4 =  {.key = {32}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOffsetCornerLongitudePoint4 =  {.key = {33}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVIcingDetected =  {.key = {34}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVwindDirection =  {.key = {35}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVWindSpeed =  {.key = {36}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVStaticPressure =  {.key = {37}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVDensityAltitude =  {.key = {38}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOutsideAirTemperature =  {.key = {39}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVTargetLocationLatitude =  {.key = {40}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVTargetLocationLongitude =  {.key = {41}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVTargetLocationeElevation =  {.key = {42}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVTargetTrackGateWidth =  {.key = {43}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVTargetTrackGateHeight =  {.key = {44}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVTargetErrorEstimateC90 =  {.key = {45}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVTargetErrorEstimateLE90 =  {.key = {46}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVGenericFlagData =  {.key = {47}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVSecurityLocalSet =  {.key = {48}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVDifferentialPressure =  {.key = {49}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformAngleOfAttack =  {.key = {50}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformVerticalSpeed =  {.key = {51}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformSideslipAngle =  {.key = {52}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVAirfieldBarometricPressure =  {.key = {53}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVAirfieldElevation =  {.key = {54}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVRelavitveHumidity =  {.key = {55}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformGroundSpeed =  {.key = {56}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVGroundRange =  {.key = {57}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVPlatformFuelRemaining =  {.key = {58}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVPlatformCallsign =  {.key = {59}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVWeaponLoad =  {.key = {60}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVWeaponFired =  {.key = {61}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVLaserPRFCode =  {.key = {62}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVSensorFieldOfViewName =  {.key = {63}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPlatfofmMagneticHeading =  {.key = {64}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVUASDatalinkLSVersionNumber =  {.key = {65}, .valueType = GMK_KLV_VALUE_INT};
 // item 66 is deprecated
-#define GMK_KLVAlternatePlatformLatitude (KLVElement) {.key = {67}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVAlternatePlatformLongitude (KLVElement) {.key = {68}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVAlternatePlatformAltitude (KLVElement) {.key = {69}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVAlternatePlatformName (KLVElement) {.key = {70}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVAlternatePlatformHeading (KLVElement) {.key = {71}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVEventStartTimeUTC (KLVElement) {.key = {72}, .valueType = KLV_VALUE_UINT64};
-#define GMK_KLVRVTLocalDataSet (KLVElement) {.key = {73}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVVMTILocalDataSet (KLVElement) {.key = {74}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVSensorEllipsoidHeight (KLVElement) {.key ={75}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVAlternatePlatformEllipsoidHeight (KLVElement) {.key ={76}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOperationalMode (KLVElement) {.key ={77}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVFrameCenterHeightAboveEllipsoid (KLVElement) {.key ={78}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorNorthVelocity (KLVElement) {.key ={79}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorEastVelocity (KLVElement) {.key ={80}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVImageHorizonPixelPack (KLVElement) {.key ={81}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVCornerLatitudePoint1Full (KLVElement) {.key ={82}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLongitudePoint1Full (KLVElement) {.key ={83}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLatitudePoint2Full (KLVElement) {.key ={84}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLongitudePoint2Full (KLVElement) {.key ={85}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLatitudePoint3Full (KLVElement) {.key ={86}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLongitudePoint3Full (KLVElement) {.key ={87}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLatitudePoint4Full (KLVElement) {.key ={88}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVCornerLongitudePoint4Full (KLVElement) {.key ={89}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVPlatformPitchAngleFull (KLVElement) {.key ={90}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVPlatformRollAngleFull (KLVElement) {.key ={91}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVPlatformAngleOfAttackFull (KLVElement) {.key ={92}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVPlatformSideSlipAngleFull (KLVElement) {.key ={93}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVMIISCoreIdentifier (KLVElement) {.key ={94}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVSARMotionImageryMetadata (KLVElement) {.key ={95}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVTargetWidthExtended (KLVElement) {.key ={96}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVRangeImageLocalSet (KLVElement) {.key ={97}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVGeoRegistrationLocalSet (KLVElement) {.key ={98}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVCompositeImagingLocalSet (KLVElement) {.key ={99}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVSegmentLocalSet (KLVElement) {.key ={100}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVAmendLocalSet (KLVElement) {.key ={101}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVKLVSDCCFLP (KLVElement) {.key ={102}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVDensityAltitudeExtended (KLVElement) {.key ={103}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVDensityEllipsoidHeightExtended (KLVElement) {.key ={104}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVAlternatePlatformEllipsoidHeightExtended (KLVElement) {.key ={105}, .valueType = KLV_VALUE_DOUBLE};
-#define GMK_KLVStreamDesignator (KLVElement) {.key ={106}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVOperationalBase (KLVElement) {.key ={107}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVBroadcastSource (KLVElement) {.key ={108}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVRangeToRecoveryLocation (KLVElement) {.key ={109}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVTimeAirborne (KLVElement) {.key ={110}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPropulsionUnitSpeed (KLVElement) {.key ={111}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPlatformCourseAngle (KLVElement) {.key ={112}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVAltitudeAGL (KLVElement) {.key ={113}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVRadarAltimeter (KLVElement) {.key ={114}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVControlCommand (KLVElement) {.key ={115}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVControlCommandVerificationList (KLVElement) {.key ={116}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVSensorAzimuthRate (KLVElement) {.key ={117}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorElevationRate (KLVElement) {.key ={118}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVSensorRollRate (KLVElement) {.key ={119}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOnboardMISStoragePercentFull (KLVElement) {.key ={120}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVActiveWaveLength (KLVElement) {.key ={121}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVKLVCountryCodes (KLVElement) {.key ={122}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVNumberofNAVSATsInView (KLVElement) {.key ={123}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPositioningMethodSource (KLVElement) {.key ={124}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPlatformStatus (KLVElement) {.key ={125}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVSensorControlMode (KLVElement) {.key ={126}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVSensorFrameRatePack (KLVElement) {.key ={127}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVWaveLenghtsList (KLVElement) {.key ={128}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVTargetID (KLVElement) {.key ={129}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVAirbaseLocations (KLVElement) {.key ={130}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVTakeoffTime (KLVElement) {.key ={131}, .valueType = KLV_VALUE_UINT64};
-#define GMK_KLVTransmissionFrequency (KLVElement) {.key ={132}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVOnboardMISStorageCapacity (KLVElement) {.key ={133}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVZoomPercentage (KLVElement) {.key ={134}, .valueType = KLV_VALUE_FLOAT};
-#define GMK_KLVCommunicationsMethod (KLVElement) {.key ={135}, .valueType = KLV_VALUE_STRING};
-#define GMK_KLVLeapSeconds (KLVElement) {.key ={136}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVCorrectionOffset (KLVElement) {.key ={137}, .valueType = KLV_VALUE_INT};
-#define GMK_KLVPayloadList (KLVElement) {.key ={138}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVActivePayloads (KLVElement) {.key ={139}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVWeaponStores (KLVElement) {.key ={140}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVWaypointList (KLVElement) {.key ={141}, .valueType = KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVAlternatePlatformLatitude =  {.key = {67}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVAlternatePlatformLongitude =  {.key = {68}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVAlternatePlatformAltitude =  {.key = {69}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVAlternatePlatformName =  {.key = {70}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVAlternatePlatformHeading =  {.key = {71}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVEventStartTimeUTC =  {.key = {72}, .valueType = GMK_KLV_VALUE_UINT64};
+const gmk_KLVElement GMK_KLVRVTLocalDataSet =  {.key = {73}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVVMTILocalDataSet =  {.key = {74}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVSensorEllipsoidHeight =  {.key ={75}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVAlternatePlatformEllipsoidHeight =  {.key ={76}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOperationalMode =  {.key ={77}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVFrameCenterHeightAboveEllipsoid =  {.key ={78}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorNorthVelocity =  {.key ={79}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorEastVelocity =  {.key ={80}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVImageHorizonPixelPack =  {.key ={81}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVCornerLatitudePoint1Full =  {.key ={82}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLongitudePoint1Full =  {.key ={83}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLatitudePoint2Full =  {.key ={84}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLongitudePoint2Full =  {.key ={85}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLatitudePoint3Full =  {.key ={86}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLongitudePoint3Full =  {.key ={87}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLatitudePoint4Full =  {.key ={88}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVCornerLongitudePoint4Full =  {.key ={89}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVPlatformPitchAngleFull =  {.key ={90}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVPlatformRollAngleFull =  {.key ={91}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVPlatformAngleOfAttackFull =  {.key ={92}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVPlatformSideSlipAngleFull =  {.key ={93}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVMIISCoreIdentifier =  {.key ={94}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVSARMotionImageryMetadata =  {.key ={95}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVTargetWidthExtended =  {.key ={96}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVRangeImageLocalSet =  {.key ={97}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVGeoRegistrationLocalSet =  {.key ={98}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVCompositeImagingLocalSet =  {.key ={99}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVSegmentLocalSet =  {.key ={100}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVAmendLocalSet =  {.key ={101}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVKLVSDCCFLP =  {.key ={102}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVDensityAltitudeExtended =  {.key ={103}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVDensityEllipsoidHeightExtended =  {.key ={104}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVAlternatePlatformEllipsoidHeightExtended =  {.key ={105}, .valueType = GMK_KLV_VALUE_DOUBLE};
+const gmk_KLVElement GMK_KLVStreamDesignator =  {.key ={106}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVOperationalBase =  {.key ={107}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVBroadcastSource =  {.key ={108}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVRangeToRecoveryLocation =  {.key ={109}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVTimeAirborne =  {.key ={110}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPropulsionUnitSpeed =  {.key ={111}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPlatformCourseAngle =  {.key ={112}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVAltitudeAGL =  {.key ={113}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVRadarAltimeter =  {.key ={114}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVControlCommand =  {.key ={115}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVControlCommandVerificationList =  {.key ={116}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVSensorAzimuthRate =  {.key ={117}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorElevationRate =  {.key ={118}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVSensorRollRate =  {.key ={119}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOnboardMISStoragePercentFull =  {.key ={120}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVActiveWaveLength =  {.key ={121}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVKLVCountryCodes =  {.key ={122}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVNumberofNAVSATsInView =  {.key ={123}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPositioningMethodSource =  {.key ={124}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPlatformStatus =  {.key ={125}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVSensorControlMode =  {.key ={126}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVSensorFrameRatePack =  {.key ={127}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVWaveLenghtsList =  {.key ={128}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVTargetID =  {.key ={129}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVAirbaseLocations =  {.key ={130}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVTakeoffTime =  {.key ={131}, .valueType = GMK_KLV_VALUE_UINT64};
+const gmk_KLVElement GMK_KLVTransmissionFrequency =  {.key ={132}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVOnboardMISStorageCapacity =  {.key ={133}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVZoomPercentage =  {.key ={134}, .valueType = GMK_KLV_VALUE_FLOAT};
+const gmk_KLVElement GMK_KLVCommunicationsMethod =  {.key ={135}, .valueType = GMK_KLV_VALUE_STRING};
+const gmk_KLVElement GMK_KLVLeapSeconds =  {.key ={136}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVCorrectionOffset =  {.key ={137}, .valueType = GMK_KLV_VALUE_INT};
+const gmk_KLVElement GMK_KLVPayloadList =  {.key ={138}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVActivePayloads =  {.key ={139}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVWeaponStores =  {.key ={140}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+const gmk_KLVElement GMK_KLVWaypointList =  {.key ={141}, .valueType = GMK_KLV_VALUE_UNKNOWN};
 
 
 // Other parsing results 
-#define GMK_KLVParseError(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_UNKNOWN};
-#define GMK_KLVUnknown(key) (KLVElement) {.key = {(key)}, .valueType = KLV_VALUE_PARSE_ERROR};
+#define GMK_KLVParseError(key) (gmk_KLVElement) {.key = {(key)}, .valueType = GMK_KLV_VALUE_UNKNOWN};
+#define GMK_KLVUnknown(key) (gmk_KLVElement) {.key = {(key)}, .valueType = GMK_KLV_VALUE_PARSE_ERROR};
 
-typedef struct KLVParser {
-    STATE state;
-    TYPE type;
+typedef struct gmk_KLVParser {
+    gmk__PARSER_STATE state;
+    gmk__SET_TYPE type;
     uint8_t buffer[MAX_PARSE_BYTES];
     uint8_t sodb[MAX_PARSE_BYTES];
     // indices of buffers in this parsing session
@@ -392,17 +396,17 @@ typedef struct KLVParser {
     size_t sodbSize;
     size_t setSize;
     size_t uasDataSetSize;
-    KLVElement checksumElement;
+    gmk_KLVElement checksumElement;
     // The checksum element is saved as 
-    KLVElement uasDataSet[MAX_UAS_TAGS];
-} KLVParser;
+    gmk_KLVElement uasDataSet[MAX_UAS_TAGS];
+} gmk_KLVParser;
 
 // Creates a properly initialized empty KLV parser
-KLVParser klvParser() {
-    KLVParser parser = {};
+GMKKLV gmk_KLVParser gmk_newKlvParser() {
+    gmk_KLVParser parser = {};
     parser.state = START_SET_KEY;
     for(int i = 0; i < MAX_UAS_TAGS; i++) {
-        parser.uasDataSet[i] = (KLVElement) {} ;
+        parser.uasDataSet[i] = (gmk_KLVElement) {} ;
     }
 
     parser.uasDataSetSize = 0;
@@ -512,7 +516,7 @@ static int decodeKey(int* numBytesRead, const uint8_t *buffer, int size) {
     return decKey;
 }
 
-static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
+static int klvParse(gmk_KLVElement *klv, uint8_t *buf, size_t size) {
     int p = 0;
 	int numOfBytesRead = 0;
 	int key = decodeKey(&numOfBytesRead, buf, size);
@@ -2337,8 +2341,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(0.0, 1500000.0, klv->length);
-                klv->floatValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(0.0, 1500000.0, klv->length);
+                klv->floatValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2450,8 +2454,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2468,8 +2472,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2486,8 +2490,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2551,8 +2555,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(0.0, 21000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(0.0, 21000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = GMK_KLVParseError(key);
                 p += len;
@@ -2611,8 +2615,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(0.0, 360.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(0.0, 360.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2630,8 +2634,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                     klv->value[i] = buf[p++];
 
 
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = GMK_KLVParseError(key);
                 p += len;
@@ -2648,8 +2652,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                     klv->value[i] = buf[p++];
 
                 // FPParser                
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2695,8 +2699,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-1000.0, 1000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-1000.0, 1000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2712,8 +2716,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-900, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2729,8 +2733,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(-900.0, 40000.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(-900.0, 40000.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2746,8 +2750,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(0.0, 100.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(0.0, 100.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
             } else {
                 *klv = GMK_KLVParseError(key);
@@ -2932,8 +2936,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(1.0, 99999.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(1.0, 99999.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
             } else {
                 *klv = GMK_KLVParseError(key);
                 p += len;
@@ -2965,8 +2969,8 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
                 for(size_t i = 0; i < len; i++)
                     klv->value[i] = buf[p++];
 
-                FPParser fpp = fpParserOf(0.0, 100.0, klv->length);
-                klv->doubleValue = fpParserDecode(&fpp, klv->value, klv->length);
+                gmk__FPParser fpp = gmk__fpParserOf(0.0, 100.0, klv->length);
+                klv->doubleValue = gmk__fpParserDecode(&fpp, klv->value, klv->length);
 
   
             } else {
@@ -3101,13 +3105,13 @@ static int klvParse(KLVElement *klv, uint8_t *buf, size_t size) {
 }
 
 
-static int klvParseUniversalSetElement(KLVElement *klv, uint8_t *data, size_t size) {
+static int klvParseUniversalSetElement(gmk_KLVElement *klv, uint8_t *data, size_t size) {
     return 0;
 }
 
 
-static void onElement(KLVParser *parser, const KLVElement klv) {
-    uint8_t klvKey = key(klv);
+static void onElement(gmk_KLVParser *parser, const gmk_KLVElement klv) {
+    uint8_t klvKey = gmk_klvKey(klv);
     if(klvKey== 1) {
         parser->checksumElement = klv;
     } else if(parser->uasDataSetSize < MAX_UAS_TAGS) {
@@ -3116,7 +3120,7 @@ static void onElement(KLVParser *parser, const KLVElement klv) {
     }
 }
 
-static void onBeginSet(KLVParser *parser, int len, TYPE type) {
+static void onBeginSet(gmk_KLVParser *parser, int len, gmk__SET_TYPE type) {
     parser->setSize = len;
     parser->state = LEXING;
     for(size_t i = 0; i < parser->bufferSize; i++) {
@@ -3125,7 +3129,7 @@ static void onBeginSet(KLVParser *parser, int len, TYPE type) {
     parser->bufferSize = 0;
 }
 
-static void onEndSet(KLVParser *parser) {
+static void onEndSet(gmk_KLVParser *parser) {
     parser->state = START_SET_KEY;
     parser->setSize = 0;
     for (size_t i = 0; i < parser->bufferSize; i++) {
@@ -3141,18 +3145,18 @@ static void onEndSet(KLVParser *parser) {
     parser->sodbSize = 0;
 
     for(size_t i = 0; i < parser->uasDataSetSize; i++) {
-        parser->uasDataSet[i] = (KLVElement) {};
+        parser->uasDataSet[i] = (gmk_KLVElement) {};
     }
     parser->uasDataSetSize = 0;
 }
 
-static void onBegin(KLVParser *parser, int len) {
+static void onBegin(gmk_KLVParser *parser, int len) {
     if(parser->type != UNKNOWN) {
         onBeginSet(parser, len, parser->type);
     }
 }
 
-static void onEndSetKey(KLVParser *parser) {
+static void onEndSetKey(gmk_KLVParser *parser) {
     parser->state = START_SET_LEN_FLAG;
     for(size_t i = 0; i < parser->bufferSize; i++) {
         parser->buffer[i] = 0;
@@ -3160,7 +3164,7 @@ static void onEndSetKey(KLVParser *parser) {
     parser->bufferSize = 0;
 }
 
-static void onEndLenFlag(KLVParser *parser) {
+static void onEndLenFlag(gmk_KLVParser *parser) {
     parser->state = START_SET_LEN;
     for(size_t i = 0; i < parser->bufferSize; i++) {
         parser->buffer[i] = 0;
@@ -3168,12 +3172,12 @@ static void onEndLenFlag(KLVParser *parser) {
     parser->bufferSize = 0;
 }
 
-static void onEndKey(KLVParser *parser, TYPE type) {
+static void onEndKey(gmk_KLVParser *parser, gmk__SET_TYPE type) {
     parser->type = type;
     onEndSetKey(parser);
 }
 
-static void onError(KLVParser *parser) {
+static void onError(gmk_KLVParser *parser) {
     parser->state = START_SET_KEY;
     parser->setSize = 0;
     for (size_t i = 0; i < parser->bufferSize; i++) {
@@ -3187,7 +3191,7 @@ static void onError(KLVParser *parser) {
     parser->sodbSize = 0;
 }
 
-void parse(KLVParser* parser, const uint8_t* chunk, const int length, void (*onEndSetCallback)(KLVElement *, int)) {
+GMKKLV void gmk_klvParse(gmk_KLVParser* parser, const uint8_t* chunk, const int length, void (*onEndSetCallback)(gmk_KLVElement *, int)) {
     
     for(size_t i = 0; i < length; i++) {
         uint8_t byte = chunk[i];
@@ -3196,17 +3200,17 @@ void parse(KLVParser* parser, const uint8_t* chunk, const int length, void (*onE
             parser->buffer[parser->bufferSize++] = byte;
             
             if(parser->bufferSize == 16) {
-                if(memcmp(parser->buffer, LocalSetKey, 16) == 0) {
+                if(memcmp(parser->buffer, gmk__LocalSetKey, 16) == 0) {
                     memcpy(parser->sodb, parser->buffer, parser->bufferSize);
                     onEndKey(parser, LOCAL_SET);
 
-                } else if (memcmp(parser->buffer, UniversalMetadataSetKey, 16) == 0) {
+                } else if (memcmp(parser->buffer, gmk__UniversalMetadataSetKey, 16) == 0) {
                     memcpy(parser->sodb, parser->buffer, parser->bufferSize);
                     onEndKey(parser, UNIVERSAL_SET);
-                } else if (memcmp(parser->buffer, SecurityMetadataUniversalSetKey, 16) == 0) {
+                } else if (memcmp(parser->buffer, gmk__SecurityMetadataUniversalSetKey, 16) == 0) {
                     memcpy(parser->sodb, parser->buffer, parser->bufferSize);
                     onEndKey(parser, SECURITY_UNIVERSAL_SET);
-                } else if (memcmp(parser->buffer, UniversalMetadataElementKey, 4) == 0) {
+                } else if (memcmp(parser->buffer, gmk__UniversalMetadataElementKey, 4) == 0) {
                     memcpy(parser->sodb, parser->buffer, parser->bufferSize);
                     onEndKey(parser, UNIVERSAL_ELEMENT);
                 } else {
@@ -3249,7 +3253,7 @@ void parse(KLVParser* parser, const uint8_t* chunk, const int length, void (*onE
         if(parser->state == PARSING) {
             int n = 0;
             while(n < parser->setSize) {
-                KLVElement klv;
+                gmk_KLVElement klv;
                 if(parser->type == LOCAL_SET) {
                     n += klvParse(&klv, parser->buffer + n, parser->setSize);
                 } else {

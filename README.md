@@ -35,6 +35,11 @@ int main {
 ```
 
 ## Compile the test of this repo 
+
+`mkdir build`
+
+`cd build` 
+
 Compile the test set 
 
 `clang -DTESTDATA_SVT_IMPLEMENTATION -c -g ../code/testdata.c -o testdata.o`
