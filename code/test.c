@@ -1,5 +1,5 @@
 #include "testdata.c"
-#define KLV_IMPLEMENTATION
+#define GMK_KLV_IMPLEMENTATION
 #include "klv/klv.h"
 #define GMK_FILES_IMPLEMENTATION
 #include "thirdparty/files.h"
@@ -9,10 +9,10 @@
 #define DOUBLE_EPSILON 0.000001
 #define FLOAT_EPSILON 0.001
 
-bool testEquality(KLVElement actual, _KLVELEMENT expected) {
+bool testEquality(gmk_KLVElement actual, _KLVELEMENT expected) {
     switch (actual.valueType)
     {
-        case KLV_VALUE_STRING:
+        case GMK_KLV_VALUE_STRING:
             for(int i = 0; i < actual.length; i++) {
                 if((char)actual.value[i] != expected.TEXT[i])
                 return false;
@@ -21,29 +21,29 @@ bool testEquality(KLVElement actual, _KLVELEMENT expected) {
             return true;
         break;
 
-        case KLV_VALUE_INT: 
+        case GMK_KLV_VALUE_INT: 
             return atoi(expected.TEXT) == actual.intValue; 
         break;
 
-        case KLV_VALUE_UINT64: {
+        case GMK_KLV_VALUE_UINT64: {
             // time is the enemy
             return true;
             break;
         }
-        case KLV_VALUE_DOUBLE: {
+        case GMK_KLV_VALUE_DOUBLE: {
             double expectedDouble = strtod(expected.TEXT, NULL);
             return fabs(expectedDouble - actual.doubleValue) <= DOUBLE_EPSILON; 
             break;
         }
-        case KLV_VALUE_FLOAT: {
+        case GMK_KLV_VALUE_FLOAT: {
             float expectedFloat = strtof(expected.TEXT, NULL);
             return fabsf(expectedFloat - actual.floatValue) <= FLOAT_EPSILON; 
             break;
         }
-        case KLV_VALUE_UNKNOWN: 
+        case GMK_KLV_VALUE_UNKNOWN: 
             return true; 
         break;
-        case KLV_VALUE_PARSE_ERROR: {
+        case GMK_KLV_VALUE_PARSE_ERROR: {
             assert(1==0);
         } break;
 
@@ -51,11 +51,11 @@ bool testEquality(KLVElement actual, _KLVELEMENT expected) {
     }
 }
 
-void klvValueAsString(KLVElement klv, char *out, int size) {
+void klvValueAsString(gmk_KLVElement klv, char *out, int size) {
 
     switch (klv.valueType)
     {
-        case KLV_VALUE_STRING:
+        case GMK_KLV_VALUE_STRING:
         if(klv.length + 1 <= size) {
            for(int i = 0; i < klv.length; i++) {
             out[i] = (char)klv.value[i];
@@ -65,13 +65,13 @@ void klvValueAsString(KLVElement klv, char *out, int size) {
         }
         break;
 
-        case KLV_VALUE_INT: sprintf(out, "%d", klv.intValue); break;
-        case KLV_VALUE_UINT64: sprintf(out, "%llu", klv.uint64Value) ; break;
-        case KLV_VALUE_DOUBLE: sprintf(out, "%lf", klv.doubleValue); break;
-        case KLV_VALUE_FLOAT: sprintf(out, "%f", klv.floatValue); break;
-        case KLV_VALUE_UNKNOWN: printf("Unknown value type for key %d\n", key(klv)); break;
-        case KLV_VALUE_PARSE_ERROR: {
-            printf("Parse error for key: %d", key(klv));
+        case GMK_KLV_VALUE_INT: sprintf(out, "%d", klv.intValue); break;
+        case GMK_KLV_VALUE_UINT64: sprintf(out, "%llu", klv.uint64Value) ; break;
+        case GMK_KLV_VALUE_DOUBLE: sprintf(out, "%lf", klv.doubleValue); break;
+        case GMK_KLV_VALUE_FLOAT: sprintf(out, "%f", klv.floatValue); break;
+        case GMK_KLV_VALUE_UNKNOWN: printf("Unknown value type for key %d\n", gmk_klvKey(klv)); break;
+        case GMK_KLV_VALUE_PARSE_ERROR: {
+            printf("Parse error for key: %d", gmk_klvKey(klv));
             assert(1==0);
         } break;
 
@@ -83,12 +83,12 @@ void klvValueAsString(KLVElement klv, char *out, int size) {
 // Key(xx)
 // Length(xx)
 // Value(binary)(readable data type)
-void printKlvSet(KLVElement *klvSet, int size) {
+void printKlvSet(gmk_KLVElement *klvSet, int size) {
         for(int i = 0; i < size; i++) {
-            KLVElement klv = klvSet[i];
+            gmk_KLVElement klv = klvSet[i];
 
             if(klv.length != 0) {
-                printf("Key(%d)\nLength(%d)\nValue(", key(klv), klv.length);
+                printf("Key(%d)\nLength(%d)\nValue(", gmk_klvKey(klv), klv.length);
 
                 // print value as hex
                 for(int j = 0; j < klv.length; j++) {
@@ -106,14 +106,14 @@ void printKlvSet(KLVElement *klvSet, int size) {
 }
 
 
-void onEndSetCallback(KLVElement *klvSet, int size) {
+void onEndSetCallback(gmk_KLVElement *klvSet, int size) {
     static int testSetIndex = 0;
     LocalSet expectedSet;
     expectedSet.original = KLV.Local_Set[testSetIndex++];
 
     for(int i = 0; i < size; i++) {
-        KLVElement klv = klvSet[i];
-        int klvKey = key(klv);
+        gmk_KLVElement klv = klvSet[i];
+        int klvKey = gmk_klvKey(klv);
 
         // Find the key in the expected test data set
         int testIndex = findIndexOfKey(expectedSet.original, klvKey);
@@ -141,7 +141,7 @@ void onEndSetCallback(KLVElement *klvSet, int size) {
 
 int main(void) {
     FILE *file;
-    file = fopen("./svt_testset_420 720p50_KLVED 4774.klv", "r");
+    file = fopen("./svt_testset_420_720p50_klved_4774.klv", "r");
     if(!file) {
         return -1;
     }
@@ -157,8 +157,8 @@ int main(void) {
     }
 
     // Parse all the test file bytes
-    struct KLVParser parser = klvParser();
-    parse(&parser, data, bytesRead, onEndSetCallback);
+    struct gmk_KLVParser parser = gmk_newKlvParser();
+    gmk_klvParse(&parser, data, bytesRead, onEndSetCallback);
     
     free(data);
     return 0;
