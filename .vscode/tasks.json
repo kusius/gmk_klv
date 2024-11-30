@@ -28,6 +28,7 @@
             "args": [
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
+                "-DTESTDATA_SVT_IMPLEMENTATION",
                 "-g",
                 "../code/test.c",
                 "-o",

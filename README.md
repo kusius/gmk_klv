@@ -38,7 +38,7 @@ int main {
 
 `cd build` 
 
-### Unix & MacOs
+### Unix & MacOS
 Compile and link the test
 
 `clang -DTESTDATA_SVT_IMPLEMENTATION -g ../code/test.c -o test`

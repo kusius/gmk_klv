@@ -2,27 +2,27 @@
     "configurations": [
         {
             "name": "(Windows) Debug test.exe",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/test",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/build",
-            "environment": [],
-            "console": "internalConsole",
-            "preLaunchTask": "compile_test_windows"
-        },
-        {
-            "name": "(Unix) Debug test.exe",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
-            "MIMode": "lldb",
-            "preLaunchTask": "compile_test_unix"
+            "program": "",
+            "windows": {
+                "preLaunchTask": "compile_test_windows",
+                "program": "${workspaceFolder}/build/test.exe",
+            },
+            "osx": {
+                "preLaunchTask": "compile_test_unix",
+                "MIMode": "lldb",
+                "program": "${workspaceFolder}/build/test",
+            },
+            "linux": {
+                "preLaunchTask": "compile_test_unix",
+                "MIMode": "gdb",
+                "program": "${workspaceFolder}/build/test",
+            }
         }
     ],
     "version": "2.0.0"
