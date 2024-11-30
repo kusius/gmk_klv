@@ -1,7 +1,19 @@
 {
     "configurations": [
         {
-            "name": "C/C++: clang build and debug active file",
+            "name": "(Windows) Debug test.exe",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/test",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "console": "internalConsole",
+            "preLaunchTask": "compile_test_windows"
+        },
+        {
+            "name": "(Unix) Debug test.exe",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/test",
@@ -9,8 +21,8 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build",
             "environment": [],
-            "externalConsole": false,
             "MIMode": "lldb",
+            "preLaunchTask": "compile_test_unix"
         }
     ],
     "version": "2.0.0"

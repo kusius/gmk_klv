@@ -36,21 +36,29 @@ int main {
 
 ## Compile the test of this repo 
 
-`mkdir build`
-
 `cd build` 
 
-Compile the test set 
-
-`clang -DTESTDATA_SVT_IMPLEMENTATION -c -g ../code/testdata.c -o testdata.o`
-
+### Unix & MacOs
 Compile and link the test
 
-`clang -g testdata.o ../code/test.c -o test`
+`clang -DTESTDATA_SVT_IMPLEMENTATION -g ../code/test.c -o test`
 
 Run the test 
 
 `./test`
+
+### Windows
+Compile and link the test
+
+`clang -DTESTDATA_SVT_IMPLEMENTATION -g ../code/test.c -o test.exe`
+
+or (MSVC compiler)
+
+`cl /nologo /Zi /DTESTDATA_SVT_IMPLEMENTATION ../code/test.c /link /out:test.exe`
+Run the test
+
+`./test.exe`
+
 
 ## For interesting usages see
 ... todo, put usages of library in KMP project

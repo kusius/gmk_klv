@@ -31,6 +31,7 @@ GMKKLV uint8_t gmk_klvKey(const struct gmk_KLVElement klv);
 // ntohs, ntohl
 #if  defined(_WIN32) || defined(WIN32)
  #include <Winsock2.h>
+ #pragma comment(lib, "Ws2_32.lib")
 #else 
  #include <netinet/in.h>
 #endif
@@ -134,7 +135,7 @@ typedef struct gmk__FPParser {
 } gmk__FPParser;
 
 gmk__FPParser gmk__fpParserOf(double min, double max, int length) {
-    gmk__FPParser fpParser = {};
+    gmk__FPParser fpParser = {0};
     fpParser.a = min;
     fpParser.b = max;
     fpParser.length = length;
@@ -403,10 +404,10 @@ typedef struct gmk_KLVParser {
 
 // Creates a properly initialized empty KLV parser
 GMKKLV gmk_KLVParser gmk_newKlvParser() {
-    gmk_KLVParser parser = {};
+    gmk_KLVParser parser = {0};
     parser.state = START_SET_KEY;
     for(int i = 0; i < MAX_UAS_TAGS; i++) {
-        parser.uasDataSet[i] = (gmk_KLVElement) {} ;
+        parser.uasDataSet[i] = (gmk_KLVElement) {0} ;
     }
 
     parser.uasDataSetSize = 0;
@@ -3145,7 +3146,7 @@ static void onEndSet(gmk_KLVParser *parser) {
     parser->sodbSize = 0;
 
     for(size_t i = 0; i < parser->uasDataSetSize; i++) {
-        parser->uasDataSet[i] = (gmk_KLVElement) {};
+        parser->uasDataSet[i] = (gmk_KLVElement) {0};
     }
     parser->uasDataSetSize = 0;
 }

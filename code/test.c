@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <time.h>
 
+// Floating point accuracies for this test
 #define DOUBLE_EPSILON 0.000001
 #define FLOAT_EPSILON 0.001
 
@@ -45,9 +46,12 @@ bool testEquality(gmk_KLVElement actual, _KLVELEMENT expected) {
         break;
         case GMK_KLV_VALUE_PARSE_ERROR: {
             assert(1==0);
+            return false;
         } break;
 
-        default: break; 
+        default: 
+            return false;
+        break; 
     }
 }
 
@@ -140,8 +144,10 @@ void onEndSetCallback(gmk_KLVElement *klvSet, int size) {
 }
 
 int main(void) {
-    FILE *file;
-    file = fopen("./svt_testset_420_720p50_klved_4774.klv", "r");
+    const char *testFilePath = "./svt_testset_420_720p50_klved_4774.klv";
+    FILE *file = NULL;
+    file = fopen(testFilePath, "rb");
+
     if(!file) {
         return -1;
     }

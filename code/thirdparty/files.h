@@ -68,7 +68,7 @@ int readall(FILE *in, uint8_t **dataptr, size_t *sizeptr)
             data = temp;
         }
 
-        n = fread(data + used, 1, READALL_CHUNK, in);
+        n = fread(data + used, sizeof(uint8_t), READALL_CHUNK, in);
         if (n == 0)
             break;
 

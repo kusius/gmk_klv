@@ -2,16 +2,36 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: clang build active file",
+            "label": "compile_test_windows",
+            "command": "cl",
+            "args": [
+                "/nologo",
+                "/Zi",
+                "/DTESTDATA_SVT_IMPLEMENTATION",
+                "../code/test.c",
+                "/link",
+                "/out:test.exe",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build",
+            "detail": "Task to build test on windows (MSVC)"
+        },
+        {
+            "type": "cppbuild",
+            "label": "compile_test_unix",
             "command": "/usr/bin/clang",
             "args": [
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
                 "-g",
-                "testdata.o",
-                "${file}",
+                "../code/test.c",
                 "-o",
-                "${workspaceFolder}/build/${fileBasenameNoExtension}"
+                "test"
             ],
             "options": {
                 "cwd": "${workspaceFolder}/build"
